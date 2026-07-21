@@ -1,0 +1,10 @@
+node_modules
+dist
+*.tsbuildinfo
+*.log
+vite-dev*.log
+.env
+.env.local
+.DS_Store
+FUTURO ATIPICO
+src/*.before-1920-test.*
