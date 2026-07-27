@@ -630,7 +630,13 @@ function SecondSection({
       transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="second-stage">
-        <img className="second-background" src={asset("FUNDO HERO.png")} alt="" />
+        <img className="second-background" src={asset("fundo pc.jpg.jpeg")} alt="" />
+        <div className="second-corners" aria-hidden="true">
+          <img className="second-corner second-corner-red" src={asset("vermelho.svg")} alt="" />
+          <img className="second-corner second-corner-teal" src={asset("azul claro.svg")} alt="" />
+          <img className="second-corner second-corner-blue" src={asset("azul escuro.svg")} alt="" />
+          <img className="second-corner second-corner-orange" src={asset("laranja.svg")} alt="" />
+        </div>
         <img
           className="second-logo"
           src={asset("LOGO IFA COLORIDA COMPLETA.png")}
