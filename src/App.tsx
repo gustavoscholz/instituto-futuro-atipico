@@ -122,8 +122,10 @@ function App() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isHeroTransitioning, setIsHeroTransitioning] = useState(false);
   const [isTransitionLightPhase, setIsTransitionLightPhase] = useState(false);
+  const [isHeroCtaVisible, setIsHeroCtaVisible] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const isAnimating = useRef(false);
+  const heroTransitionTimeoutRef = useRef<number | null>(null);
 
   const activeSection = sections[activeIndex];
 
@@ -138,7 +140,11 @@ function App() {
       isAnimating.current = true;
       setMenuOpen(false);
       setIsTransitionLightPhase(false);
-      setIsHeroTransitioning(true);
+      setIsHeroCtaVisible(false);
+      heroTransitionTimeoutRef.current = window.setTimeout(() => {
+        setIsHeroTransitioning(true);
+        heroTransitionTimeoutRef.current = null;
+      }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 90 : 180);
       return;
     }
 
@@ -192,6 +198,18 @@ function App() {
     };
   }, [activeIndex]);
 
+  useEffect(() => () => {
+    if (heroTransitionTimeoutRef.current !== null) {
+      window.clearTimeout(heroTransitionTimeoutRef.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (activeIndex === 0 && !isHeroTransitioning) {
+      setIsHeroCtaVisible(true);
+    }
+  }, [activeIndex, isHeroTransitioning]);
+
   const completeHeroTransition = () => {
     setActiveIndex(1);
     setIsHeroTransitioning(false);
@@ -239,7 +257,11 @@ function App() {
         {isHeroTransitioning ? (
           <HeroLogoTransition key="hero-transition" onLightPhase={() => setIsTransitionLightPhase(true)} onComplete={completeHeroTransition} />
         ) : activeIndex === 0 ? (
-          <FirstSection key="inicio" goToNext={() => goToSection(1)} />
+          <FirstSection
+            key="inicio"
+            areCtasVisible={isHeroCtaVisible}
+            goToNext={() => goToSection(1)}
+          />
         ) : activeIndex === 1 ? (
           <SecondSection key="propósito" goToNext={() => goToSection(2)} />
         ) : activeIndex === 2 ? (
@@ -309,7 +331,13 @@ function App() {
   );
 }
 
-function FirstSection({ goToNext }: { goToNext: () => void }) {
+function FirstSection({
+  areCtasVisible,
+  goToNext,
+}: {
+  areCtasVisible: boolean;
+  goToNext: () => void;
+}) {
   return (
     <motion.section
       className="hero-section"
@@ -320,9 +348,11 @@ function FirstSection({ goToNext }: { goToNext: () => void }) {
     >
       <div className="hero-stage">
         <img className="hero-background" src={asset("FUNDO.png")} alt="" />
-        <img className="hero-logo" src={asset("LOGO IFA BRANCA.png")} alt="Instituto Futuro Atípico" />
-
-        <div className="hero-actions" aria-label="Ações principais">
+        <img className="hero-logo" src={asset("LOGO IFA BRANCA.svg")} alt="Instituto Futuro Atípico" />
+        <div
+          className={`hero-actions ${areCtasVisible ? "hero-actions-visible" : "hero-actions-hidden"}`}
+          aria-label="Ações principais"
+        >
           <button className="hero-button hero-button-primary" type="button">
             Conheça o IFA
           </button>
@@ -348,13 +378,14 @@ function HeroLogoTransition({
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
   const whiteLogoRef = useRef<HTMLImageElement>(null);
-  const whiteCoreRef = useRef<HTMLDivElement>(null);
-  const whiteWashRef = useRef<HTMLDivElement>(null);
+  const logoMaskRef = useRef<HTMLDivElement>(null);
   const colorLogoRef = useRef<HTMLImageElement>(null);
   const mouseRef = useRef<HTMLButtonElement>(null);
   const callbacks = useRef({ onComplete, onLightPhase });
 
-  callbacks.current = { onComplete, onLightPhase };
+  useLayoutEffect(() => {
+    callbacks.current = { onComplete, onLightPhase };
+  }, [onComplete, onLightPhase]);
 
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
@@ -363,117 +394,129 @@ function HeroLogoTransition({
         onComplete: () => callbacks.current.onComplete(),
       });
 
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const startLogoWidth = whiteLogoRef.current?.getBoundingClientRect().width ?? Math.min(Math.max(viewportWidth * 0.22, 220), 340);
+      const finalMaskWidth = Math.max(viewportWidth * 11, viewportHeight * 5.5);
+      const finalMaskScale = finalMaskWidth / startLogoWidth;
+      const logoAspectRatio = 240 / 300;
+      const solidAnchorX = 0.343;
+      const solidAnchorY = 0.625;
+      const maskOriginX = viewportWidth / 2 + (solidAnchorX - 0.5) * startLogoWidth;
+      const maskOriginY = viewportHeight / 2 + (solidAnchorY - 0.5) * startLogoWidth * logoAspectRatio;
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
       gsap.set(stageRef.current, { backgroundColor: "#042747" });
       gsap.set(whiteLogoRef.current, {
         autoAlpha: 1,
         scale: 1,
         transformOrigin: "50% 50%",
       });
-      gsap.set(whiteCoreRef.current, {
+      gsap.set(logoMaskRef.current, {
         autoAlpha: 0,
-        scale: 0.24,
-        transformOrigin: "50% 50%",
+        scale: 1,
+        transformOrigin: `${maskOriginX}px ${maskOriginY}px`,
+        force3D: true,
       });
-      gsap.set(whiteWashRef.current, { autoAlpha: 0 });
       gsap.set(colorLogoRef.current, {
         autoAlpha: 0,
-        scale: 0.9,
-        top: "28.2105263%",
-        left: "42.1875%",
-        width: "15.625%",
-        height: "25.2631579%",
+        scale: 0.96,
       });
       gsap.set(mouseRef.current, { autoAlpha: 0 });
 
+      if (prefersReducedMotion) {
+        callbacks.current.onLightPhase();
+        timeline
+          .set(stageRef.current, { backgroundColor: "#ffffff" })
+          .set(whiteLogoRef.current, { autoAlpha: 0 })
+          .set(logoMaskRef.current, { autoAlpha: 0 })
+          .to(colorLogoRef.current, {
+            autoAlpha: 1,
+            scale: 1,
+            duration: 0.18,
+            ease: "power2.out",
+          })
+          .to(
+            mouseRef.current,
+            {
+              autoAlpha: 1,
+              duration: 0.12,
+              ease: "power2.out",
+            },
+            0.08,
+          );
+
+        return;
+      }
+
       timeline
         .to(whiteLogoRef.current, {
-          scale: 1.34,
-          duration: 0.82,
+          scale: 1.045,
+          duration: 0.18,
           ease: "power2.out",
         })
         .to(
-          whiteCoreRef.current,
+          logoMaskRef.current,
           {
             autoAlpha: 1,
-            scale: 0.52,
-            duration: 0.72,
-            ease: "power2.out",
+            duration: 0.08,
+            ease: "none",
           },
-          0.18,
-        )
-        .to(
-          whiteLogoRef.current,
-          {
-            autoAlpha: 0.34,
-            scale: 1.72,
-            duration: 1.05,
-            ease: "power2.inOut",
-          },
-          0.62,
-        )
-        .to(
-          whiteCoreRef.current,
-          {
-            scale: 18,
-            duration: 2.18,
-            ease: "power3.inOut",
-          },
-          0.72,
+          0.14,
         )
         .to(
           whiteLogoRef.current,
           {
             autoAlpha: 0,
-            duration: 0.48,
+            duration: 0.18,
             ease: "power2.out",
           },
-          1.52,
+          0.2,
         )
         .to(
+          logoMaskRef.current,
+          {
+            scale: finalMaskScale,
+            duration: 1.1,
+            ease: "power3.inOut",
+            onStart: () => callbacks.current.onLightPhase(),
+          },
+          0.2,
+        )
+        .set(
           stageRef.current,
           {
             backgroundColor: "#ffffff",
-            duration: 0.62,
-            ease: "power2.out",
           },
-          2.12,
+          1.3,
         )
         .to(
-          whiteWashRef.current,
+          logoMaskRef.current,
           {
-            autoAlpha: 1,
-            duration: 0.7,
+            autoAlpha: 0,
+            duration: 0.12,
             ease: "power2.out",
-            onStart: () => callbacks.current.onLightPhase(),
           },
-          2.42,
+          1.3,
         )
         .to(
           colorLogoRef.current,
           {
             autoAlpha: 1,
             scale: 1,
-            duration: 0.82,
+            duration: 0.34,
             ease: "power3.out",
           },
-          3.0,
+          1.31,
         )
-        .to(colorLogoRef.current, {
-          top: "5.2631579%",
-          left: "6.25%",
-          width: "10.1041667%",
-          height: "7.3684211%",
-          duration: 1.28,
-          ease: "power3.inOut",
-        })
         .to(
           mouseRef.current,
           {
             autoAlpha: 1,
-            duration: 0.42,
+            duration: 0.26,
             ease: "power2.out",
           },
-          "-=0.12",
+          1.4,
         );
     }, stageRef);
 
@@ -487,21 +530,17 @@ function HeroLogoTransition({
       <div className="transition-stage" ref={stageRef}>
         <img
           className="transition-white-logo"
-          src={asset("LOGO IFA BRANCA.png")}
+          src={asset("LOGO IFA BRANCA.svg")}
           alt=""
           ref={whiteLogoRef}
         />
         <div
-          className="transition-white-core"
-          ref={whiteCoreRef}
-        />
-        <div
-          className="transition-white-wash"
-          ref={whiteWashRef}
+          className="transition-logo-mask"
+          ref={logoMaskRef}
         />
         <img
           className="transition-color-logo"
-          src={asset("LOGO IFA COLORIDA.png")}
+          src={asset("LOGO IFA COLORIDA COMPLETA.png")}
           alt="Instituto Futuro Atípico"
           ref={colorLogoRef}
         />
@@ -1590,7 +1629,7 @@ function FAQSection() {
         <footer className="site-footer">
           <div className="footer-content">
             <div className="footer-brand">
-              <img src={asset("LOGO IFA BRANCA.png")} alt="Instituto Futuro Atípico" />
+              <img src={asset("LOGO IFA BRANCA.svg")} alt="Instituto Futuro Atípico" />
               <p>Proteção financeira, orientação e acolhimento para famílias atípicas.</p>
               <div className="footer-socials" aria-label="Canais sociais">
                 <button type="button" aria-label="Instagram">
