@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import gsap from "gsap";
+import { WhiteLogoMark } from "./components/WhiteLogoMark";
 import {
   ArrowRight,
   BadgeDollarSign,
@@ -118,16 +119,18 @@ const sections: Section[] = [
 
 const asset = (name: string) => `/assets/${name}`;
 
+type HeroTransitionDirection = "forward" | "reverse" | null;
+
 function App() {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [isHeroTransitioning, setIsHeroTransitioning] = useState(false);
-  const [isTransitionLightPhase, setIsTransitionLightPhase] = useState(false);
+  const [heroTransitionDirection, setHeroTransitionDirection] = useState<HeroTransitionDirection>(null);
   const [isHeroCtaVisible, setIsHeroCtaVisible] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
   const isAnimating = useRef(false);
   const heroTransitionTimeoutRef = useRef<number | null>(null);
 
   const activeSection = sections[activeIndex];
+  const isHeroTransitioning = heroTransitionDirection !== null;
 
   const goToSection = (index: number) => {
     const nextIndex = Math.min(Math.max(index, 0), sections.length - 1);
@@ -139,12 +142,19 @@ function App() {
     if (activeIndex === 0 && nextIndex === 1) {
       isAnimating.current = true;
       setMenuOpen(false);
-      setIsTransitionLightPhase(false);
       setIsHeroCtaVisible(false);
       heroTransitionTimeoutRef.current = window.setTimeout(() => {
-        setIsHeroTransitioning(true);
+        setHeroTransitionDirection("forward");
         heroTransitionTimeoutRef.current = null;
       }, window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 90 : 180);
+      return;
+    }
+
+    if (activeIndex === 1 && nextIndex === 0) {
+      isAnimating.current = true;
+      setMenuOpen(false);
+      setIsHeroCtaVisible(false);
+      setHeroTransitionDirection("reverse");
       return;
     }
 
@@ -196,7 +206,7 @@ function App() {
       window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [activeIndex]);
+  }, [activeIndex, heroTransitionDirection]);
 
   useEffect(() => () => {
     if (heroTransitionTimeoutRef.current !== null) {
@@ -210,18 +220,21 @@ function App() {
     }
   }, [activeIndex, isHeroTransitioning]);
 
-  const completeHeroTransition = () => {
-    setActiveIndex(1);
-    setIsHeroTransitioning(false);
-    setIsTransitionLightPhase(false);
+  const completeHeroTransition = (direction: Exclude<HeroTransitionDirection, null>) => {
+    if (direction === "reverse") {
+      setIsHeroCtaVisible(true);
+    }
+
+    setHeroTransitionDirection(null);
     window.setTimeout(() => {
       isAnimating.current = false;
-    }, 900);
+    }, 280);
   };
 
   const isDarkInternalSection = activeIndex === 5 || activeIndex === 9 || activeIndex === 10;
-  const useLightMenu = isTransitionLightPhase || (activeIndex > 0 && !isDarkInternalSection);
-  const useHeaderOffset = isTransitionLightPhase || activeIndex > 0;
+  const useLightMenu = heroTransitionDirection === "reverse"
+    || (activeIndex > 0 && !isDarkInternalSection);
+  const useHeaderOffset = heroTransitionDirection === "reverse" || activeIndex > 0;
 
   const navItems = useMemo(
     () =>
@@ -237,7 +250,7 @@ function App() {
           }}
         />
       )),
-    [activeIndex],
+    [activeIndex, heroTransitionDirection],
   );
 
   return (
@@ -254,16 +267,20 @@ function App() {
       </header>
 
       <AnimatePresence mode="wait">
-        {isHeroTransitioning ? (
-          <HeroLogoTransition key="hero-transition" onLightPhase={() => setIsTransitionLightPhase(true)} onComplete={completeHeroTransition} />
-        ) : activeIndex === 0 ? (
-          <FirstSection
-            key="inicio"
-            areCtasVisible={isHeroCtaVisible}
-            goToNext={() => goToSection(1)}
-          />
+        {activeIndex === 0 ? (
+          <div className="hero-flow" key="inicio-flow">
+            <FirstSection
+              areCtasVisible={isHeroCtaVisible}
+              goToNext={() => goToSection(1)}
+            />
+          </div>
         ) : activeIndex === 1 ? (
-          <SecondSection key="propósito" goToNext={() => goToSection(2)} />
+          <SecondSection
+            key="propósito"
+            enterImmediately={heroTransitionDirection === "forward"}
+            exitImmediately={heroTransitionDirection === "reverse"}
+            goToNext={() => goToSection(2)}
+          />
         ) : activeIndex === 2 ? (
           <ThirdSection key="jornada" goToNext={() => goToSection(3)} />
         ) : activeIndex === 3 ? (
@@ -297,6 +314,13 @@ function App() {
           </motion.section>
         )}
       </AnimatePresence>
+
+      <HeroLogoController
+        direction={heroTransitionDirection}
+        isHeroActive={activeIndex === 0}
+        onCovered={(direction) => setActiveIndex(direction === "forward" ? 1 : 0)}
+        onComplete={completeHeroTransition}
+      />
 
       <aside className="section-nav" aria-label="Navegação entre seções">
         {navItems}
@@ -343,12 +367,10 @@ function FirstSection({
       className="hero-section"
       initial={{ opacity: 0, filter: "blur(4px)" }}
       animate={{ opacity: 1, filter: "blur(0px)" }}
-      exit={{ opacity: 0, filter: "blur(4px)" }}
       transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="hero-stage">
         <img className="hero-background" src={asset("FUNDO.png")} alt="" />
-        <img className="hero-logo" src={asset("LOGO IFA BRANCA.svg")} alt="Instituto Futuro Atípico" />
         <div
           className={`hero-actions ${areCtasVisible ? "hero-actions-visible" : "hero-actions-hidden"}`}
           aria-label="Ações principais"
@@ -369,201 +391,242 @@ function FirstSection({
   );
 }
 
-function HeroLogoTransition({
+function HeroLogoController({
+  direction,
+  isHeroActive,
+  onCovered,
   onComplete,
-  onLightPhase,
 }: {
-  onComplete: () => void;
-  onLightPhase: () => void;
+  direction: HeroTransitionDirection;
+  isHeroActive: boolean;
+  onCovered: (direction: Exclude<HeroTransitionDirection, null>) => void;
+  onComplete: (direction: Exclude<HeroTransitionDirection, null>) => void;
 }) {
   const stageRef = useRef<HTMLDivElement>(null);
-  const whiteLogoRef = useRef<HTMLImageElement>(null);
-  const logoMaskRef = useRef<HTMLDivElement>(null);
-  const colorLogoRef = useRef<HTMLImageElement>(null);
-  const mouseRef = useRef<HTMLButtonElement>(null);
-  const callbacks = useRef({ onComplete, onLightPhase });
+  const logoSvgRef = useRef<SVGSVGElement>(null);
+  const logoGroupRef = useRef<SVGGElement>(null);
+  const whiteCoverRef = useRef<HTMLDivElement>(null);
+  const callbacks = useRef({ onCovered, onComplete });
 
   useLayoutEffect(() => {
-    callbacks.current = { onComplete, onLightPhase };
-  }, [onComplete, onLightPhase]);
+    callbacks.current = { onCovered, onComplete };
+  }, [onCovered, onComplete]);
 
   useLayoutEffect(() => {
+    if (direction !== null) {
+      return;
+    }
+
+    const positionLogoAtRest = () => {
+      if (!logoSvgRef.current || !logoGroupRef.current || !whiteCoverRef.current) {
+        return;
+      }
+
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const logoWidth = viewportWidth <= 760
+        ? Math.min(Math.max(viewportWidth * 0.44, 150), 210)
+        : viewportWidth <= 1180
+          ? Math.min(Math.max(viewportWidth * 0.28, 190), 260)
+          : Math.min(Math.max(viewportWidth * 0.22, 260), 340);
+      const startScale = logoWidth / 300;
+      const translateX = (viewportWidth - 300 * startScale) / 2;
+      const translateY = (viewportHeight - 240 * startScale) / 2;
+
+      logoSvgRef.current.setAttribute("viewBox", `0 0 ${viewportWidth} ${viewportHeight}`);
+      logoGroupRef.current.setAttribute(
+        "transform",
+        `translate(${translateX} ${translateY}) scale(${startScale})`,
+      );
+      gsap.set(logoSvgRef.current, {
+        autoAlpha: isHeroActive ? 1 : 0,
+      });
+      gsap.set(logoGroupRef.current, { autoAlpha: 1 });
+      gsap.set(whiteCoverRef.current, { autoAlpha: 0 });
+    };
+
+    positionLogoAtRest();
+    window.addEventListener("resize", positionLogoAtRest);
+
+    return () => {
+      window.removeEventListener("resize", positionLogoAtRest);
+    };
+  }, [direction, isHeroActive]);
+
+  useLayoutEffect(() => {
+    if (direction === null) {
+      return;
+    }
+
     const ctx = gsap.context(() => {
       const timeline = gsap.timeline({
         defaults: { overwrite: "auto" },
-        onComplete: () => callbacks.current.onComplete(),
+        onComplete: () => callbacks.current.onComplete(direction),
       });
 
       const viewportWidth = window.innerWidth;
       const viewportHeight = window.innerHeight;
-      const startLogoWidth = whiteLogoRef.current?.getBoundingClientRect().width ?? Math.min(Math.max(viewportWidth * 0.22, 220), 340);
-      const finalMaskWidth = Math.max(viewportWidth * 11, viewportHeight * 5.5);
-      const finalMaskScale = finalMaskWidth / startLogoWidth;
-      const logoAspectRatio = 240 / 300;
-      const solidAnchorX = 0.343;
-      const solidAnchorY = 0.625;
-      const maskOriginX = viewportWidth / 2 + (solidAnchorX - 0.5) * startLogoWidth;
-      const maskOriginY = viewportHeight / 2 + (solidAnchorY - 0.5) * startLogoWidth * logoAspectRatio;
+      const fallbackLogoWidth = viewportWidth <= 760
+        ? Math.min(Math.max(viewportWidth * 0.44, 150), 210)
+        : viewportWidth <= 1180
+          ? Math.min(Math.max(viewportWidth * 0.28, 190), 260)
+          : Math.min(Math.max(viewportWidth * 0.22, 260), 340);
+      const startScale = fallbackLogoWidth / 300;
+      const finalScale = Math.max(viewportWidth * 11, viewportHeight * 5.5) / 300;
+      const anchorX = 300 * 0.343;
+      const anchorY = 240 * 0.625;
+      const initialLeft = (viewportWidth - 300 * startScale) / 2;
+      const initialTop = (viewportHeight - 240 * startScale) / 2;
+      const screenAnchorX = initialLeft + anchorX * startScale;
+      const screenAnchorY = initialTop + anchorY * startScale;
       const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const scaleState = {
+        value: direction === "forward" ? startScale : finalScale,
+      };
 
-      gsap.set(stageRef.current, { backgroundColor: "#042747" });
-      gsap.set(whiteLogoRef.current, {
-        autoAlpha: 1,
-        scale: 1,
-        transformOrigin: "50% 50%",
+      const renderLogoScale = () => {
+        if (!logoGroupRef.current) {
+          return;
+        }
+
+        const translateX = screenAnchorX - anchorX * scaleState.value;
+        const translateY = screenAnchorY - anchorY * scaleState.value;
+        logoGroupRef.current.setAttribute(
+          "transform",
+          `translate(${translateX} ${translateY}) scale(${scaleState.value})`,
+        );
+      };
+
+      logoSvgRef.current?.setAttribute("viewBox", `0 0 ${viewportWidth} ${viewportHeight}`);
+      renderLogoScale();
+      gsap.set(logoSvgRef.current, { autoAlpha: 1 });
+      gsap.set(logoGroupRef.current, {
+        autoAlpha: direction === "forward" ? 1 : 0,
       });
-      gsap.set(logoMaskRef.current, {
-        autoAlpha: 0,
-        scale: 1,
-        transformOrigin: `${maskOriginX}px ${maskOriginY}px`,
-        force3D: true,
-      });
-      gsap.set(colorLogoRef.current, {
-        autoAlpha: 0,
-        scale: 0.96,
-      });
-      gsap.set(mouseRef.current, { autoAlpha: 0 });
+      gsap.set(whiteCoverRef.current, { autoAlpha: 0 });
 
       if (prefersReducedMotion) {
-        callbacks.current.onLightPhase();
-        timeline
-          .set(stageRef.current, { backgroundColor: "#ffffff" })
-          .set(whiteLogoRef.current, { autoAlpha: 0 })
-          .set(logoMaskRef.current, { autoAlpha: 0 })
-          .to(colorLogoRef.current, {
-            autoAlpha: 1,
-            scale: 1,
-            duration: 0.18,
-            ease: "power2.out",
-          })
-          .to(
-            mouseRef.current,
-            {
+        if (direction === "forward") {
+          timeline
+            .set(whiteCoverRef.current, { autoAlpha: 1 })
+            .set(logoGroupRef.current, { autoAlpha: 0 })
+            .call(() => callbacks.current.onCovered(direction))
+            .to(whiteCoverRef.current, {
+              autoAlpha: 0,
+              duration: 0.22,
+              ease: "power2.out",
+            }, 0.04);
+        } else {
+          timeline
+            .to(whiteCoverRef.current, {
               autoAlpha: 1,
               duration: 0.12,
               ease: "power2.out",
-            },
-            0.08,
-          );
+            })
+            .call(() => callbacks.current.onCovered(direction))
+            .call(() => {
+              scaleState.value = startScale;
+              renderLogoScale();
+            })
+            .set(logoGroupRef.current, { autoAlpha: 1 })
+            .set(whiteCoverRef.current, { autoAlpha: 0 }, 0.16);
+        }
 
         return;
       }
 
-      timeline
-        .to(whiteLogoRef.current, {
-          scale: 1.045,
-          duration: 0.18,
-          ease: "power2.out",
-        })
-        .to(
-          logoMaskRef.current,
-          {
-            autoAlpha: 1,
-            duration: 0.08,
-            ease: "none",
-          },
-          0.14,
-        )
-        .to(
-          whiteLogoRef.current,
-          {
-            autoAlpha: 0,
-            duration: 0.18,
-            ease: "power2.out",
-          },
-          0.2,
-        )
-        .to(
-          logoMaskRef.current,
-          {
-            scale: finalMaskScale,
-            duration: 1.1,
-            ease: "power3.inOut",
-            onStart: () => callbacks.current.onLightPhase(),
-          },
-          0.2,
-        )
-        .set(
-          stageRef.current,
-          {
-            backgroundColor: "#ffffff",
-          },
-          1.3,
-        )
-        .to(
-          logoMaskRef.current,
-          {
-            autoAlpha: 0,
-            duration: 0.12,
-            ease: "power2.out",
-          },
-          1.3,
-        )
-        .to(
-          colorLogoRef.current,
-          {
-            autoAlpha: 1,
-            scale: 1,
-            duration: 0.34,
-            ease: "power3.out",
-          },
-          1.31,
-        )
-        .to(
-          mouseRef.current,
-          {
-            autoAlpha: 1,
-            duration: 0.26,
-            ease: "power2.out",
-          },
-          1.4,
-        );
+      if (direction === "forward") {
+        timeline
+          .to(
+            scaleState,
+            {
+              value: finalScale,
+              duration: 1.28,
+              ease: "power2.inOut",
+              onUpdate: renderLogoScale,
+            },
+            0,
+          )
+          .set(whiteCoverRef.current, { autoAlpha: 1 }, 1.28)
+          .set(logoGroupRef.current, { autoAlpha: 0 }, 1.28)
+          .call(() => callbacks.current.onCovered(direction), [], 1.28)
+          .to(
+            whiteCoverRef.current,
+            {
+              autoAlpha: 0,
+              duration: 0.26,
+              ease: "power2.out",
+            },
+            1.35,
+          );
+      } else {
+        timeline
+          .to(
+            whiteCoverRef.current,
+            {
+              autoAlpha: 1,
+              duration: 0.22,
+              ease: "power2.out",
+            },
+            0,
+          )
+          .call(() => callbacks.current.onCovered(direction), [], 0.22)
+          .set(logoGroupRef.current, { autoAlpha: 1 }, 0.27)
+          .set(whiteCoverRef.current, { autoAlpha: 0 }, 0.27)
+          .to(
+            scaleState,
+            {
+              value: startScale,
+              duration: 1.28,
+              ease: "power2.inOut",
+              onUpdate: renderLogoScale,
+            },
+            0.27,
+          );
+      }
     }, stageRef);
 
     return () => ctx.revert();
-  }, []);
+  }, [direction]);
+
+  const isVisible = isHeroActive || direction !== null;
 
   return (
     <section
-      className="transition-section"
+      className={`hero-logo-controller ${isVisible ? "hero-logo-controller-visible" : ""}`}
     >
       <div className="transition-stage" ref={stageRef}>
-        <img
-          className="transition-white-logo"
-          src={asset("LOGO IFA BRANCA.svg")}
-          alt=""
-          ref={whiteLogoRef}
+        <WhiteLogoMark
+          className="hero-logo-vector"
+          groupRef={logoGroupRef}
+          ref={logoSvgRef}
         />
-        <div
-          className="transition-logo-mask"
-          ref={logoMaskRef}
-        />
-        <img
-          className="transition-color-logo"
-          src={asset("LOGO IFA COLORIDA COMPLETA.png")}
-          alt="Instituto Futuro Atípico"
-          ref={colorLogoRef}
-        />
-        <button
-          className="transition-mouse"
-          type="button"
-          aria-label="Carregando próxima seção"
-          ref={mouseRef}
-        >
-          <img className="mouse-dark" src={asset("MOUSE.png")} alt="" />
-        </button>
+        <div className="transition-white-cover" ref={whiteCoverRef} />
       </div>
     </section>
   );
 }
 
-function SecondSection({ goToNext }: { goToNext: () => void }) {
+function SecondSection({
+  enterImmediately = false,
+  exitImmediately = false,
+  goToNext,
+}: {
+  enterImmediately?: boolean;
+  exitImmediately?: boolean;
+  goToNext: () => void;
+}) {
   return (
     <motion.section
       className="second-section"
-      initial={{ opacity: 0 }}
+      initial={enterImmediately ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      exit={{
+        opacity: 0,
+        transition: exitImmediately
+          ? { duration: 0 }
+          : { duration: 0.72, ease: [0.22, 1, 0.36, 1] },
+      }}
       transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="second-stage">
