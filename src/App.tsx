@@ -644,38 +644,35 @@ function SecondSection({
         />
         <img className="family-photo" src={asset("FOTO FAMILIA.png")} alt="Família sorrindo" />
 
-        <div className="second-copy-left">
-          <h1>
-            O <strong>futuro</strong> do seu <strong className="text-blue">filho</strong> não
-            <br />
-            pode depender do <strong className="text-red">acaso.</strong>
-          </h1>
-          <div className="left-support">
-            <div className="carousel-dots" aria-hidden="true">
-              <span />
-              <span />
-              <span />
-              <span />
+        <div className="second-content">
+          <div className="second-copy-left">
+            <h1>
+              O <strong>futuro</strong> do seu <strong className="text-blue">filho</strong> não{" "}
+              <span className="second-title-break">
+                pode depender do <strong className="text-red">acaso.</strong>
+              </span>
+            </h1>
+            <div className="left-support">
+              <div className="family-avatars" aria-hidden="true">
+                <img src={asset("foto1.png")} alt="" />
+                <img src={asset("foto2.png")} alt="" />
+                <img src={asset("foto3.png")} alt="" />
+                <img src={asset("foto4.png")} alt="" />
+              </div>
+              <p>Cada vez mais famílias estão escolhendo planejar o futuro com antecedência.</p>
             </div>
-            <p>
-              Cada vez mais famílias estão escolhendo
-              <br />
-              planejar o futuro com antecedência.
-            </p>
           </div>
-        </div>
 
-        <div className="second-copy-right">
-          <p>
-            Por meio do <strong>Método de Continuidade IFA</strong>, ajudamos
-            <br />
-            pais atípicos a planejar a continuidade do cuidado,
-            <br />
-            organizando a <strong className="right-blue">proteção</strong>,{" "}
-            <strong className="right-orange">previsibilidade</strong> e{" "}
-            <strong className="right-teal">segurança.</strong>
-          </p>
-          <button type="button">Entender o planejamento</button>
+          <div className="second-copy-right">
+            <p>
+              Por meio do <strong>Método de Continuidade IFA</strong>, ajudamos pais atípicos a
+              planejar a continuidade do cuidado, organizando a{" "}
+              <strong className="right-blue">proteção</strong>,{" "}
+              <strong className="right-orange">previsibilidade</strong> e{" "}
+              <strong className="right-teal">segurança.</strong>
+            </p>
+            <button type="button">Entender o planejamento</button>
+          </div>
         </div>
 
         <button className="second-mouse" type="button" aria-label="Próxima seção" onClick={goToNext}>
