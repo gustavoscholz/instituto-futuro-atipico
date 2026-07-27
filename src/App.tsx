@@ -684,13 +684,56 @@ function SecondSection({
 }
 
 function ThirdSection({ goToNext }: { goToNext: () => void }) {
+  const concerns = [
+    {
+      id: "rotina",
+      title: "Rotina intensa",
+      color: "#0D4C87",
+      icon: Clock3,
+      placement: "top",
+      x: 8.36,
+      y: 20.7,
+      copy: "Consultas, terapias, escola e trabalho se acumulam em uma rotina que exige presença constante e quase nunca desacelera.",
+    },
+    {
+      id: "sobrecarga",
+      title: "Sobrecarga emocional",
+      color: "#0D8F8F",
+      icon: Brain,
+      placement: "bottom",
+      x: 31.04,
+      y: 15,
+      copy: "Cansaço, culpa e ansiedade frequentemente acompanham quem sente que não pode parar, mesmo diante dos desafios mais difíceis da jornada do cuidado.",
+    },
+    {
+      id: "custos",
+      title: "Custos contínuos",
+      color: "#F78000",
+      icon: BadgeDollarSign,
+      placement: "top",
+      x: 57.13,
+      y: 76.68,
+      copy: "Deslocamentos e acompanhamentos fazem parte de um cuidado contínuo que pressiona o orçamento mês após mês.",
+    },
+    {
+      id: "medo",
+      title: "Medo do inesperado",
+      color: "#B53C3C",
+      icon: TriangleAlert,
+      placement: "bottom",
+      x: 89.32,
+      y: 78.54,
+      copy: "Doença, invalidez ou até a morte podem causar a perda de renda da família, comprometendo sua estabilidade e a continuidade do cuidado.",
+    },
+  ] as const;
+
   return (
     <motion.section
       className="third-section"
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -18 }}
-      transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="third-stage">
         <img className="third-background" src={asset("FUNDO HERO.png")} alt="" />
@@ -699,17 +742,20 @@ function ThirdSection({ goToNext }: { goToNext: () => void }) {
         <div className="third-heading-block">
           <h1>
             Existem <span className="orange">preocupações</span> que só
+            {" "}
             <br />
             quem vive essa rotina <span className="teal">entende.</span>
           </h1>
           <p>
-            Entre terapias, escola, trabalho e custos, a rotina de uma família
+            Entre terapias, escola, trabalho e custos, a rotina de uma família{" "}
             <br />
             atípica exige presença o tempo todo. E no meio de tudo isso, uma
+            {" "}
             <br />
             preocupação silenciosa costuma aparecer:{" "}
             <strong>
               se algo sair do
+              {" "}
               <br />
               planejado, como o cuidado do meu filho continua?
             </strong>
@@ -717,55 +763,15 @@ function ThirdSection({ goToNext }: { goToNext: () => void }) {
         </div>
 
         <div className="timeline-area" aria-label="Preocupações frequentes">
-          <svg className="timeline-curve" viewBox="0 0 1440 150" preserveAspectRatio="none" aria-hidden="true">
-            <path className="timeline-curve-shadow" d="M70 92 C310 10 475 78 655 112 C845 148 1035 128 1370 88" />
-            <path className="timeline-curve-main" d="M70 92 C310 10 475 78 655 112 C845 148 1035 128 1370 88" />
-            <path className="timeline-curve-dots" d="M70 92 C310 10 475 78 655 112 C845 148 1035 128 1370 88" />
-          </svg>
+          <div className="timeline-track">
+            <img className="timeline-road" src={asset("estrada.svg")} alt="" aria-hidden="true" />
 
-          <TimelineCard
-            className="timeline-card-rotina"
-            markerClassName="timeline-marker-rotina"
-            title="Rotina intensa"
-            color="#0D4C87"
-            icon={Clock3}
-            placement="top"
-          >
-            Consultas, terapias, escola e trabalho se acumulam em uma rotina que exige presença constante e quase nunca desacelera.
-          </TimelineCard>
-
-          <TimelineCard
-            className="timeline-card-sobrecarga"
-            markerClassName="timeline-marker-sobrecarga"
-            title="Sobrecarga emocional"
-            color="#0D8F8F"
-            icon={Brain}
-            placement="bottom"
-          >
-            Cansaço, culpa e ansiedade frequentemente acompanham quem sente que não pode parar, mesmo diante dos desafios mais difíceis da jornada do cuidado.
-          </TimelineCard>
-
-          <TimelineCard
-            className="timeline-card-custos"
-            markerClassName="timeline-marker-custos"
-            title="Custos contínuos"
-            color="#F78000"
-            icon={BadgeDollarSign}
-            placement="top"
-          >
-            Deslocamentos e acompanhamentos fazem parte de um cuidado contínuo que pressiona o orçamento mês após mês.
-          </TimelineCard>
-
-          <TimelineCard
-            className="timeline-card-medo"
-            markerClassName="timeline-marker-medo"
-            title="Medo do inesperado"
-            color="#B53C3C"
-            icon={TriangleAlert}
-            placement="bottom"
-          >
-            Doença, invalidez ou até a morte podem causar a perda de renda da família, comprometendo sua estabilidade e a continuidade do cuidado.
-          </TimelineCard>
+            {concerns.map((concern, order) => (
+              <TimelineCard key={concern.id} {...concern} order={order}>
+                {concern.copy}
+              </TimelineCard>
+            ))}
+          </div>
         </div>
 
         <button className="third-mouse" type="button" aria-label="Próxima seção" onClick={goToNext}>
@@ -778,36 +784,51 @@ function ThirdSection({ goToNext }: { goToNext: () => void }) {
 
 function TimelineCard({
   children,
-  className,
+  id,
   icon: Icon,
-  markerClassName,
   color,
   placement,
+  order,
   title,
+  x,
+  y,
 }: {
   children: string;
-  className: string;
+  id: string;
   icon: typeof Clock3;
-  markerClassName: string;
   color: string;
   placement: "top" | "bottom";
+  order: number;
   title: string;
+  x: number;
+  y: number;
 }) {
   return (
-    <div className={`timeline-item timeline-item-${placement} ${className}-item`}>
+    <div
+      className={`timeline-item timeline-item-${placement} timeline-item-${id}`}
+      style={
+        {
+          "--timeline-accent": color,
+          "--timeline-x": `${x}%`,
+          "--timeline-y": `${y}%`,
+          "--timeline-order": order,
+          "--timeline-delay": `${220 + order * 230}ms`,
+        } as React.CSSProperties
+      }
+    >
       <article
-        className={`timeline-card timeline-card-${placement} ${className}`}
+        className={`timeline-card timeline-card-${placement}`}
         style={{ "--timeline-accent": color } as React.CSSProperties}
       >
         <h2>{title}</h2>
         <p>{children}</p>
       </article>
       <div
-        className={`timeline-connector timeline-connector-${placement} ${className}-connector`}
+        className={`timeline-connector timeline-connector-${placement}`}
         style={{ "--timeline-accent": color } as React.CSSProperties}
       />
       <div
-        className={`timeline-marker ${markerClassName}`}
+        className="timeline-marker"
         style={{ "--timeline-accent": color } as React.CSSProperties}
         aria-hidden="true"
       >
