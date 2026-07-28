@@ -9,19 +9,23 @@ import {
   Brain,
   BriefcaseBusiness,
   CalendarDays,
+  ClipboardCheck,
   ClipboardList,
   Clock3,
   Ear,
+  Heart,
   HeartHandshake,
   Instagram,
   Lightbulb,
   LockKeyhole,
+  MessageCircle,
   MessageSquare,
   Network,
   Plus,
   Quote,
   RefreshCcw,
   Route,
+  Shield,
   ShieldCheck,
   Stethoscope,
   TriangleAlert,
@@ -650,36 +654,38 @@ function SecondSection({
           src={asset("LOGO IFA COLORIDA COMPLETA.png")}
           alt="Instituto Futuro Atípico"
         />
-        <img className="family-photo" src={asset("FOTO FAMILIA.png")} alt="Família sorrindo" />
+        <div className="second-main">
+          <img className="family-photo" src={asset("FOTO FAMILIA.png")} alt="Família sorrindo" />
 
-        <div className="second-content">
-          <div className="second-copy-left">
-            <h1>
-              O <strong>futuro</strong> do seu <strong className="text-blue">filho</strong> não{" "}
-              <span className="second-title-break">
-                pode depender do <strong className="text-red">acaso.</strong>
-              </span>
-            </h1>
-            <div className="left-support">
-              <div className="family-avatars" aria-hidden="true">
-                <img src={asset("foto1.png")} alt="" />
-                <img src={asset("foto2.png")} alt="" />
-                <img src={asset("foto3.png")} alt="" />
-                <img src={asset("foto4.png")} alt="" />
+          <div className="second-content">
+            <div className="second-copy-left">
+              <h1>
+                O <strong>futuro</strong> do seu <strong className="text-blue">filho</strong> não{" "}
+                <span className="second-title-break">
+                  pode depender do <strong className="text-red">acaso.</strong>
+                </span>
+              </h1>
+              <div className="left-support">
+                <div className="family-avatars" aria-hidden="true">
+                  <img src={asset("foto1.png")} alt="" />
+                  <img src={asset("foto2.png")} alt="" />
+                  <img src={asset("foto3.png")} alt="" />
+                  <img src={asset("foto4.png")} alt="" />
+                </div>
+                <p>Cada vez mais famílias estão escolhendo planejar o futuro com antecedência.</p>
               </div>
-              <p>Cada vez mais famílias estão escolhendo planejar o futuro com antecedência.</p>
             </div>
-          </div>
 
-          <div className="second-copy-right">
-            <p>
-              Por meio do <strong>Método de Continuidade IFA</strong>, ajudamos pais atípicos a
-              planejar a continuidade do cuidado, organizando a{" "}
-              <strong className="right-blue">proteção</strong>,{" "}
-              <strong className="right-orange">previsibilidade</strong> e{" "}
-              <strong className="right-teal">segurança.</strong>
-            </p>
-            <button type="button">Entender o planejamento</button>
+            <div className="second-copy-right">
+              <p>
+                Por meio do <strong>Método de Continuidade IFA</strong>, ajudamos pais atípicos a
+                planejar a continuidade do cuidado, organizando a{" "}
+                <strong className="right-blue">proteção</strong>,{" "}
+                <strong className="right-orange">previsibilidade</strong> e{" "}
+                <strong className="right-teal">segurança.</strong>
+              </p>
+              <button type="button">Entender o planejamento</button>
+            </div>
           </div>
         </div>
 
@@ -1271,46 +1277,91 @@ function FifthSection({ goToNext }: { goToNext: () => void }) {
       transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="fifth-stage">
-        <img className="fifth-background" src={asset("FUNDO.png")} alt="" />
+        <img className="fifth-background" src={asset("fundo escuro.png")} alt="" />
+        <div className="fifth-corners" aria-hidden="true">
+          <img className="fifth-corner fifth-corner-red" src={asset("vermelho2.svg")} alt="" />
+          <img className="fifth-corner fifth-corner-teal" src={asset("azul claro2.svg")} alt="" />
+          <img className="fifth-corner fifth-corner-blue" src={asset("azul escuro2.svg")} alt="" />
+          <img className="fifth-corner fifth-corner-orange" src={asset("laranja2.svg")} alt="" />
+        </div>
         <img
           className="fifth-logo"
           src={asset("LOGO IFA COLORIDA COMPLETA FUNDO ESCURO.png")}
           alt="Instituto Futuro Atípico"
         />
 
-        <div className="conversation-copy">
-          <p className="conversation-kicker">CONVERSE COM O IFA</p>
-          <h1>
-            O <span className="orange">futuro</span> do seu filho{" "}
-            <span className="red">não</span>
-            <br />{" "}
-            precisa depender do
-            <br />{" "}
-            <span className="blue">improviso.</span>
-          </h1>
-          <p className="conversation-text">
-            Em uma conversa consultiva, o <strong>IFA</strong> entende a
-            <br />{" "}
-            realidade de sua família e ajuda <strong>você</strong> a enxergar
-            <br />{" "}
-            caminhos possíveis para proteger o cuidado, a rotina
-            <br />{" "}
-            e a segurança de quem mais depende de <strong>você.</strong>
-          </p>
+        <div className="conversation-layout">
+          <div className="conversation-copy">
+            <p className="conversation-kicker">CONVERSE COM O IFA</p>
+            <h1>
+              O <span className="orange">futuro</span> do seu{" "}
+              <span className="conversation-title-keep">
+                filho <span className="red">não</span>
+              </span>
+              <br />{" "}
+              precisa depender do
+              <br />{" "}
+              <span className="blue">improviso.</span>
+            </h1>
+            <p className="conversation-text">
+              Em uma conversa consultiva, o <strong>IFA</strong> entende a
+              <br />{" "}
+              realidade de sua família e ajuda <strong>você</strong> a enxergar
+              <br />{" "}
+              caminhos possíveis para proteger o cuidado, a rotina
+              <br />{" "}
+              e a segurança de quem mais depende de <strong>você.</strong>
+            </p>
 
-          <button className="conversation-button conversation-button-primary" type="button">
-            Fale agora com o IFA
-          </button>
-          <button className="conversation-button conversation-button-outline" type="button">
-            Entender melhor como funciona
-          </button>
+            <button className="conversation-button conversation-button-primary" type="button">
+              Fale agora com o IFA
+            </button>
+            <button className="conversation-button conversation-button-outline" type="button">
+              Entender melhor como funciona
+            </button>
+          </div>
+
+          <article className="conversation-card" aria-labelledby="conversation-card-title">
+            <header className="conversation-card-header">
+              <span className="conversation-card-heading-icon" aria-hidden="true">
+                <MessageCircle />
+              </span>
+              <h2 id="conversation-card-title">O que acontece na conversa?</h2>
+            </header>
+
+            <ol className="conversation-steps">
+              <li>
+                <span className="conversation-step-number">1</span>
+                <UsersRound className="conversation-step-icon" aria-hidden="true" />
+                <p>Entendimento da sua rotina familiar</p>
+              </li>
+              <li>
+                <span className="conversation-step-number">2</span>
+                <ClipboardCheck className="conversation-step-icon" aria-hidden="true" />
+                <p>Mapeamento dos riscos e preocupações</p>
+              </li>
+              <li>
+                <span className="conversation-step-number">3</span>
+                <span className="conversation-step-icon conversation-shield-heart" aria-hidden="true">
+                  <Shield />
+                  <Heart />
+                </span>
+                <p>Primeira visão sobre caminhos de proteção</p>
+              </li>
+            </ol>
+
+            <footer className="conversation-card-footer">
+              <span className="conversation-card-dot" aria-hidden="true" />
+              <p>
+                Você não precisa chegar com tudo pronto.
+                <br />
+                O papel do IFA é ajudar sua família a organizar
+                <br />
+                o que hoje parece difícil de enxergar.
+              </p>
+            </footer>
+          </article>
         </div>
-
-        <img
-          className="conversation-card"
-          src={asset("CARD O QUE ACONTECE NA CONVERSA.png")}
-          alt="O que acontece na conversa?"
-        />
 
         <button className="fifth-mouse" type="button" aria-label="Próxima seção" onClick={goToNext}>
           <img src={asset("MOUSE.png")} alt="" />
