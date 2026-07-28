@@ -607,6 +607,20 @@ function HeroLogoController({
   );
 }
 
+function LightSectionBackground({ className = "" }: { className?: string }) {
+  return (
+    <div className={`light-section-background ${className}`.trim()} aria-hidden="true">
+      <img className="light-section-background-base" src={asset("fundo pc.jpg.jpeg")} alt="" />
+      <div className="light-section-background-corners">
+        <img className="light-section-corner light-section-corner-red" src={asset("vermelho.svg")} alt="" />
+        <img className="light-section-corner light-section-corner-teal" src={asset("azul claro.svg")} alt="" />
+        <img className="light-section-corner light-section-corner-blue" src={asset("azul escuro.svg")} alt="" />
+        <img className="light-section-corner light-section-corner-orange" src={asset("laranja.svg")} alt="" />
+      </div>
+    </div>
+  );
+}
+
 function SecondSection({
   enterImmediately = false,
   exitImmediately = false,
@@ -630,13 +644,7 @@ function SecondSection({
       transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="second-stage">
-        <img className="second-background" src={asset("fundo pc.jpg.jpeg")} alt="" />
-        <div className="second-corners" aria-hidden="true">
-          <img className="second-corner second-corner-red" src={asset("vermelho.svg")} alt="" />
-          <img className="second-corner second-corner-teal" src={asset("azul claro.svg")} alt="" />
-          <img className="second-corner second-corner-blue" src={asset("azul escuro.svg")} alt="" />
-          <img className="second-corner second-corner-orange" src={asset("laranja.svg")} alt="" />
-        </div>
+        <LightSectionBackground className="second-light-background" />
         <img
           className="second-logo"
           src={asset("LOGO IFA COLORIDA COMPLETA.png")}
@@ -676,7 +684,10 @@ function SecondSection({
         </div>
 
         <button className="second-mouse" type="button" aria-label="Próxima seção" onClick={goToNext}>
-          <img className="mouse-dark" src={asset("MOUSE.png")} alt="" />
+          <img className="second-legacy-mouse mouse-dark" src={asset("MOUSE.png")} alt="" />
+          <span className="second-scroll-indicator" aria-hidden="true">
+            <span className="second-scroll-indicator-dot" />
+          </span>
         </button>
       </div>
     </motion.section>
@@ -736,7 +747,7 @@ function ThirdSection({ goToNext }: { goToNext: () => void }) {
       transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="third-stage">
-        <img className="third-background" src={asset("FUNDO HERO.png")} alt="" />
+        <LightSectionBackground className="third-light-background" />
         <img className="third-logo" src={asset("LOGO IFA COLORIDA COMPLETA.png")} alt="Instituto Futuro Atípico" />
 
         <div className="third-heading-block">
@@ -839,16 +850,118 @@ function TimelineCard({
 }
 
 function FourthSection({ goToNext }: { goToNext: () => void }) {
+  const puzzleRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    const puzzle = puzzleRef.current;
+
+    if (!puzzle) {
+      return;
+    }
+
+    const center = puzzle.querySelector<HTMLElement>(".method-center-piece");
+    const orange = puzzle.querySelector<HTMLElement>(".method-piece-orange");
+    const red = puzzle.querySelector<HTMLElement>(".method-piece-red");
+    const teal = puzzle.querySelector<HTMLElement>(".method-piece-teal");
+    const blue = puzzle.querySelector<HTMLElement>(".method-piece-blue");
+    const orangeJoint = puzzle.querySelector<HTMLElement>(".method-joint-orange");
+    const blueJoint = puzzle.querySelector<HTMLElement>(".method-joint-blue");
+
+    if (!center || !orange || !red || !teal || !blue || !orangeJoint || !blueJoint) {
+      return;
+    }
+
+    const ctx = gsap.context(() => {
+      const pieces = [orange, red, teal, blue];
+      const joints = [orangeJoint, blueJoint];
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      if (prefersReducedMotion) {
+        gsap.set([center, ...pieces, ...joints], {
+          clearProps: "transform,opacity,visibility",
+        });
+        return;
+      }
+
+      const isMobile = window.matchMedia("(max-width: 760px)").matches;
+      const isTablet = window.matchMedia("(min-width: 761px) and (max-width: 1180px)").matches;
+      const offset = isTablet ? 22 : 34;
+      const entrances: Array<{ target: HTMLElement; x?: number; y?: number }> = isMobile
+        ? [
+            { target: orange, y: -22 },
+            { target: red, y: 22 },
+            { target: teal, y: -22 },
+            { target: blue, y: 22 },
+          ]
+        : [
+            { target: orange, x: -offset },
+            { target: red, x: -offset },
+            { target: teal, x: offset },
+            { target: blue, x: offset },
+          ];
+
+      gsap.set(center, { autoAlpha: 0, scale: 0.94, transformOrigin: "center center" });
+      gsap.set(joints, { autoAlpha: 0, scale: 0.72, transformOrigin: "center center" });
+      entrances.forEach(({ target, x = 0, y = 0 }) => {
+        gsap.set(target, {
+          autoAlpha: 0,
+          x,
+          y,
+          scale: 0.97,
+          transformOrigin: "center center",
+        });
+      });
+
+      const timeline = gsap.timeline({ defaults: { overwrite: "auto" } });
+
+      timeline.to(center, {
+        autoAlpha: 1,
+        scale: 1,
+        duration: 0.38,
+        ease: "power3.out",
+      });
+
+      entrances.forEach(({ target }, index) => {
+        const startAt = 0.26 + index * 0.27;
+
+        timeline.to(target, {
+          autoAlpha: 1,
+          x: 0,
+          y: 0,
+          scale: 1,
+          duration: 0.26,
+          ease: "power3.out",
+        }, startAt);
+      });
+
+      timeline.to(orangeJoint, {
+        autoAlpha: 1,
+        scale: 1,
+        duration: 0.18,
+        ease: "power3.out",
+      }, 0.38);
+
+      timeline.to(blueJoint, {
+        autoAlpha: 1,
+        scale: 1,
+        duration: 0.18,
+        ease: "power3.out",
+      }, 1.19);
+    }, puzzle);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
     <motion.section
       className="fourth-section"
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -18 }}
-      transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.46, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="fourth-stage">
-        <img className="fourth-background" src={asset("FUNDO HERO.png")} alt="" />
+        <LightSectionBackground className="fourth-light-background" />
         <img className="fourth-logo" src={asset("LOGO IFA COLORIDA COMPLETA.png")} alt="Instituto Futuro Atípico" />
 
         <div className="method-kicker">COMO FUNCIONA</div>
@@ -878,7 +991,7 @@ function FourthSection({ goToNext }: { goToNext: () => void }) {
           sua realidade e conduz o planejamento em etapas claras e personalizadas.
         </p>
 
-        <div className="method-puzzle" aria-label="Etapas do Método de Continuidade IFA">
+        <div ref={puzzleRef} className="method-puzzle" aria-label="Etapas do Método de Continuidade IFA">
           <div className="method-side method-side-left">
             <MethodPuzzlePiece
               className="method-piece-orange"
@@ -901,6 +1014,9 @@ function FourthSection({ goToNext }: { goToNext: () => void }) {
             <strong>CONTINUIDADE DO CUIDADO</strong>
             <p>Um plano para manter o cuidado conectado ao futuro.</p>
           </div>
+
+          <span className="method-joint method-joint-orange" aria-hidden="true" />
+          <span className="method-joint method-joint-blue" aria-hidden="true" />
 
           <div className="method-side method-side-right">
             <MethodPuzzlePiece
@@ -963,9 +1079,9 @@ const feedbacks: Feedback[] = [
     role: "Mãe divorciada",
     subtitle: "filho com deficiência intelectual",
     quote:
-      "O que eu buscava era a tranquilidade de saber que meu filho continuaria assistido, mesmo na minha ausência ou em caso de invalidez.",
+      "Eu precisava ter a tranquilidade de saber que meu filho seguiria assistido, mesmo na minha ausência ou em caso de invalidez.",
     description:
-      "Foi estruturado um plano sob medida para garantir suporte ao filho, continuidade das terapias e mais segurança para o futuro da família.",
+      "Criamos um plano para manter terapias, suporte e segurança financeira para a família.",
     chips: ["Terapias", "Suporte ao filho", "Segurança familiar"],
   },
   {
@@ -973,20 +1089,63 @@ const feedbacks: Feedback[] = [
     role: "Pai provedor",
     subtitle: "filha com síndrome de Down",
     quote:
-      "Minha maior preocupação era garantir previsibilidade para que minha família continuasse amparada se algo acontecesse comigo.",
+      "Eu queria previsibilidade para que minha família continuasse amparada se algo acontecesse comigo.",
     description:
-      "Para esse cenário, o IFA desenvolveu um plano com foco em previsibilidade financeira, considerando proteção em caso de morte e invalidez, preservando a continuidade do cuidado da família.",
+      "O plano organizou proteção de renda e a continuidade do cuidado da família.",
     chips: ["Continuidade do cuidado", "Previsibilidade financeira", "Proteção em vida"],
+  },
+  {
+    accent: "#b53c3c",
+    role: "Mãe solo",
+    subtitle: "filho autista",
+    quote:
+      "Eu precisava organizar as terapias e a rotina sem deixar o futuro do meu filho depender só de mim.",
+    description:
+      "Estruturamos uma reserva para terapias e um plano de apoio para cada fase da família.",
+    chips: ["Terapias", "Rotina organizada", "Reserva familiar"],
+  },
+  {
+    accent: "#0d4c87",
+    role: "Casal cuidador",
+    subtitle: "filha com paralisia cerebral",
+    quote:
+      "Nossa preocupação era manter o cuidado da nossa filha mesmo diante de uma mudança na renda.",
+    description:
+      "O IFA conectou proteção de renda, organização patrimonial e o plano de cuidados.",
+    chips: ["Proteção de renda", "Planejamento familiar", "Cuidado contínuo"],
+  },
+  {
+    accent: "#f78000",
+    role: "Responsável por adolescente",
+    subtitle: "filho com condição crônica",
+    quote:
+      "Eu queria preparar a autonomia do meu filho sem perder a segurança que ele ainda precisa.",
+    description:
+      "Construímos uma transição gradual, com previsibilidade para o cuidado e para o futuro.",
+    chips: ["Autonomia gradual", "Previsibilidade", "Segurança"],
   },
 ];
 
 function StoriesSection({ goToNext }: { goToNext: () => void }) {
   const [activeFeedback, setActiveFeedback] = useState(0);
+  const [isCarouselPaused, setIsCarouselPaused] = useState(false);
   const nextFeedback = (activeFeedback + 1) % feedbacks.length;
 
   const goToFeedback = (direction: 1 | -1) => {
     setActiveFeedback((current) => (current + direction + feedbacks.length) % feedbacks.length);
   };
+
+  useEffect(() => {
+    if (isCarouselPaused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setActiveFeedback((current) => (current + 1) % feedbacks.length);
+    }, 4000);
+
+    return () => window.clearTimeout(timeout);
+  }, [activeFeedback, isCarouselPaused]);
 
   return (
     <motion.section
@@ -1023,6 +1182,10 @@ function StoriesSection({ goToNext }: { goToNext: () => void }) {
           drag="x"
           dragConstraints={{ left: 0, right: 0 }}
           dragElastic={0.12}
+          onPointerDown={() => setIsCarouselPaused(true)}
+          onPointerUp={() => setIsCarouselPaused(false)}
+          onPointerCancel={() => setIsCarouselPaused(false)}
+          onPointerLeave={() => setIsCarouselPaused(false)}
           onDragEnd={(_, info) => {
             if (info.offset.x < -70) {
               goToFeedback(1);
@@ -1045,7 +1208,10 @@ function StoriesSection({ goToNext }: { goToNext: () => void }) {
               type="button"
               className={index === activeFeedback ? "active" : ""}
               aria-label={`Ir para feedback ${index + 1}`}
-              onClick={() => setActiveFeedback(index)}
+              onClick={() => {
+                setActiveFeedback(index);
+                setIsCarouselPaused(false);
+              }}
             />
           ))}
         </div>
@@ -1063,10 +1229,10 @@ function FeedbackCard({ feedback, variant }: { feedback: Feedback; variant: "mai
     <motion.article
       className={`feedback-card feedback-card-${variant}`}
       style={{ "--feedback-accent": feedback.accent } as React.CSSProperties}
-      initial={{ opacity: 0, x: variant === "main" ? -24 : 24, scale: variant === "main" ? 0.98 : 0.9 }}
+      initial={{ opacity: 0, x: variant === "main" ? -16 : 16, scale: variant === "main" ? 0.99 : 0.96 }}
       animate={{ opacity: 1, x: 0, scale: 1 }}
-      exit={{ opacity: 0, x: variant === "main" ? -24 : 24, scale: 0.96 }}
-      transition={{ duration: 0.36, ease: [0.22, 1, 0.36, 1] }}
+      exit={{ opacity: 0, x: variant === "main" ? -16 : 16, scale: 0.985 }}
+      transition={{ duration: 0.52, ease: [0.16, 1, 0.3, 1] }}
     >
       <header>
         <div className="feedback-icon">
