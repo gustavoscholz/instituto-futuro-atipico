@@ -1,6 +1,8 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
+import type * as React from "react";
+import { AnimatePresence, motion, useReducedMotion, type Variants } from "framer-motion";
 import gsap from "gsap";
+import { useNavigate } from "react-router-dom";
 import { WhiteLogoMark } from "./components/WhiteLogoMark";
 import {
   ArrowRight,
@@ -17,7 +19,6 @@ import {
   HeartHandshake,
   Instagram,
   Lightbulb,
-  LockKeyhole,
   MessageCircle,
   MessageSquare,
   Network,
@@ -30,7 +31,6 @@ import {
   Stethoscope,
   TriangleAlert,
   UsersRound,
-  X,
 } from "lucide-react";
 
 type Section = {
@@ -130,11 +130,34 @@ function App() {
   const [heroTransitionDirection, setHeroTransitionDirection] = useState<HeroTransitionDirection>(null);
   const [isHeroCtaVisible, setIsHeroCtaVisible] = useState(true);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [conversationMobilePage, setConversationMobilePage] = useState<0 | 1>(0);
+  const [whoMobilePage, setWhoMobilePage] = useState<0 | 1>(0);
+  const [foundersMobilePage, setFoundersMobilePage] = useState<0 | 1>(0);
+  const [partnerMobilePage, setPartnerMobilePage] = useState<0 | 1>(0);
+  const [isMobileViewport, setIsMobileViewport] = useState(
+    () => window.matchMedia("(max-width: 760px)").matches,
+  );
   const isAnimating = useRef(false);
   const heroTransitionTimeoutRef = useRef<number | null>(null);
+  const touchStartRef = useRef<{ x: number; y: number; localScroll: HTMLElement | null } | null>(null);
 
   const activeSection = sections[activeIndex];
   const isHeroTransitioning = heroTransitionDirection !== null;
+
+  useEffect(() => {
+    if (!menuOpen) {
+      return;
+    }
+
+    const closeMenuWithEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setMenuOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", closeMenuWithEscape);
+    return () => window.removeEventListener("keydown", closeMenuWithEscape);
+  }, [menuOpen]);
 
   const goToSection = (index: number) => {
     const nextIndex = Math.min(Math.max(index, 0), sections.length - 1);
@@ -169,6 +192,163 @@ function App() {
     }, 950);
   };
 
+  const showConversationMobilePage = (page: 0 | 1) => {
+    if (page === conversationMobilePage || isAnimating.current || isHeroTransitioning) {
+      return;
+    }
+
+    isAnimating.current = true;
+    setMenuOpen(false);
+    setConversationMobilePage(page);
+    window.setTimeout(() => {
+      isAnimating.current = false;
+    }, 620);
+  };
+
+  const showWhoMobilePage = (page: 0 | 1) => {
+    if (page === whoMobilePage || isAnimating.current || isHeroTransitioning) {
+      return;
+    }
+
+    isAnimating.current = true;
+    setMenuOpen(false);
+    setWhoMobilePage(page);
+    window.setTimeout(() => {
+      isAnimating.current = false;
+    }, 620);
+  };
+
+  const showFoundersMobilePage = (page: 0 | 1) => {
+    if (page === foundersMobilePage || isAnimating.current || isHeroTransitioning) {
+      return;
+    }
+
+    isAnimating.current = true;
+    setMenuOpen(false);
+    setFoundersMobilePage(page);
+    window.setTimeout(() => {
+      isAnimating.current = false;
+    }, 620);
+  };
+
+  const showPartnerMobilePage = (page: 0 | 1) => {
+    if (page === partnerMobilePage || isAnimating.current || isHeroTransitioning) {
+      return;
+    }
+
+    isAnimating.current = true;
+    setMenuOpen(false);
+    setPartnerMobilePage(page);
+    window.setTimeout(() => {
+      isAnimating.current = false;
+    }, 620);
+  };
+
+  const navigateByDirection = (direction: -1 | 1) => {
+    if (isMobileViewport) {
+      if (activeIndex === 5 && direction === 1 && conversationMobilePage === 0) {
+        showConversationMobilePage(1);
+        return;
+      }
+
+      if (activeIndex === 5 && direction === -1 && conversationMobilePage === 1) {
+        showConversationMobilePage(0);
+        return;
+      }
+
+      if (activeIndex === 6 && direction === 1 && whoMobilePage === 0) {
+        showWhoMobilePage(1);
+        return;
+      }
+
+      if (activeIndex === 6 && direction === -1 && whoMobilePage === 1) {
+        showWhoMobilePage(0);
+        return;
+      }
+
+      if (activeIndex === 6 && direction === -1 && whoMobilePage === 0) {
+        setConversationMobilePage(1);
+        goToSection(5);
+        return;
+      }
+
+      if (activeIndex === 7 && direction === 1 && foundersMobilePage === 0) {
+        showFoundersMobilePage(1);
+        return;
+      }
+
+      if (activeIndex === 7 && direction === -1 && foundersMobilePage === 1) {
+        showFoundersMobilePage(0);
+        return;
+      }
+
+      if (activeIndex === 7 && direction === -1 && foundersMobilePage === 0) {
+        setWhoMobilePage(1);
+        goToSection(6);
+        return;
+      }
+
+      if (activeIndex === 8 && direction === 1 && partnerMobilePage === 0) {
+        showPartnerMobilePage(1);
+        return;
+      }
+
+      if (activeIndex === 8 && direction === -1 && partnerMobilePage === 1) {
+        showPartnerMobilePage(0);
+        return;
+      }
+
+      if (activeIndex === 8 && direction === -1 && partnerMobilePage === 0) {
+        setFoundersMobilePage(1);
+        goToSection(7);
+        return;
+      }
+
+      if (activeIndex === 9 && direction === -1) {
+        setPartnerMobilePage(1);
+        goToSection(8);
+        return;
+      }
+
+      if (activeIndex === 4 && direction === 1) {
+        setConversationMobilePage(0);
+      }
+
+      if (activeIndex === 5 && direction === 1 && conversationMobilePage === 1) {
+        setWhoMobilePage(0);
+      }
+
+      if (activeIndex === 6 && direction === 1 && whoMobilePage === 1) {
+        setFoundersMobilePage(0);
+      }
+
+      if (activeIndex === 7 && direction === 1 && foundersMobilePage === 1) {
+        setPartnerMobilePage(0);
+      }
+    }
+
+    goToSection(activeIndex + direction);
+  };
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(max-width: 760px)");
+    const handleChange = (event: MediaQueryListEvent) => {
+      setIsMobileViewport(event.matches);
+
+      if (!event.matches) {
+        setConversationMobilePage(0);
+        setWhoMobilePage(0);
+        setFoundersMobilePage(0);
+        setPartnerMobilePage(0);
+      }
+    };
+
+    setIsMobileViewport(mediaQuery.matches);
+    mediaQuery.addEventListener("change", handleChange);
+
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
+
   useEffect(() => {
     const handleWheel = (event: WheelEvent) => {
       const localScroll = event.target instanceof Element
@@ -190,32 +370,100 @@ function App() {
         return;
       }
 
-      goToSection(activeIndex + (event.deltaY > 0 ? 1 : -1));
+      navigateByDirection(event.deltaY > 0 ? 1 : -1);
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "ArrowDown" || event.key === "PageDown") {
-        goToSection(activeIndex + 1);
+        navigateByDirection(1);
       }
 
       if (event.key === "ArrowUp" || event.key === "PageUp") {
-        goToSection(activeIndex - 1);
+        navigateByDirection(-1);
       }
+    };
+
+    const handleTouchStart = (event: TouchEvent) => {
+      if (!isMobileViewport || menuOpen || event.touches.length !== 1) {
+        touchStartRef.current = null;
+        return;
+      }
+
+      const target = event.target instanceof Element ? event.target : null;
+      touchStartRef.current = {
+        x: event.touches[0].clientX,
+        y: event.touches[0].clientY,
+        localScroll: target?.closest("[data-local-scroll]") as HTMLElement | null,
+      };
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      const touchStart = touchStartRef.current;
+      touchStartRef.current = null;
+
+      if (!touchStart || !isMobileViewport || menuOpen || event.changedTouches.length !== 1) {
+        return;
+      }
+
+      const deltaX = touchStart.x - event.changedTouches[0].clientX;
+      const deltaY = touchStart.y - event.changedTouches[0].clientY;
+
+      if (Math.abs(deltaY) < 48 || Math.abs(deltaY) <= Math.abs(deltaX)) {
+        return;
+      }
+
+      const direction: -1 | 1 = deltaY > 0 ? 1 : -1;
+      const localScroll = touchStart.localScroll;
+
+      if (localScroll) {
+        const canScrollDown = direction === 1
+          && localScroll.scrollTop + localScroll.clientHeight < localScroll.scrollHeight - 1;
+        const canScrollUp = direction === -1 && localScroll.scrollTop > 0;
+
+        if (canScrollDown || canScrollUp) {
+          return;
+        }
+      }
+
+      navigateByDirection(direction);
     };
 
     window.addEventListener("wheel", handleWheel, { passive: false });
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("touchstart", handleTouchStart, { passive: true });
+    window.addEventListener("touchend", handleTouchEnd, { passive: true });
 
     return () => {
       window.removeEventListener("wheel", handleWheel);
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("touchstart", handleTouchStart);
+      window.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [activeIndex, heroTransitionDirection]);
+  }, [
+    activeIndex,
+    conversationMobilePage,
+    foundersMobilePage,
+    heroTransitionDirection,
+    isMobileViewport,
+    menuOpen,
+    partnerMobilePage,
+    whoMobilePage,
+  ]);
 
   useEffect(() => () => {
     if (heroTransitionTimeoutRef.current !== null) {
       window.clearTimeout(heroTransitionTimeoutRef.current);
     }
+  }, []);
+
+  useEffect(() => {
+    [
+      "LOGO IFA COLORIDA COMPLETA.png",
+      "LOGO IFA COLORIDA COMPLETA FUNDO ESCURO.png",
+    ].forEach((fileName) => {
+      const image = new Image();
+      image.src = asset(fileName);
+    });
   }, []);
 
   useEffect(() => {
@@ -236,9 +484,12 @@ function App() {
   };
 
   const isDarkInternalSection = activeIndex === 5 || activeIndex === 9 || activeIndex === 10;
-  const useLightMenu = heroTransitionDirection === "reverse"
-    || (activeIndex > 0 && !isDarkInternalSection);
-  const useHeaderOffset = heroTransitionDirection === "reverse" || activeIndex > 0;
+  const showPersistentLogo = activeIndex > 0 && heroTransitionDirection === null;
+  const persistentLogoSrc = asset(
+    isDarkInternalSection
+      ? "LOGO IFA COLORIDA COMPLETA FUNDO ESCURO.png"
+      : "LOGO IFA COLORIDA COMPLETA.png",
+  );
 
   const navItems = useMemo(
     () =>
@@ -250,6 +501,18 @@ function App() {
           aria-label={`Ir para ${section.eyebrow}`}
           onClick={() => {
             setMenuOpen(false);
+            if (index === 5) {
+              setConversationMobilePage(0);
+            }
+            if (index === 6) {
+              setWhoMobilePage(0);
+            }
+            if (index === 7) {
+              setFoundersMobilePage(0);
+            }
+            if (index === 8) {
+              setPartnerMobilePage(0);
+            }
             goToSection(index);
           }}
         />
@@ -259,14 +522,26 @@ function App() {
 
   return (
     <main className={`site-shell ${activeSection.tone === "dark" ? "is-dark" : "is-light"}`}>
-      <header className={`site-header ${useHeaderOffset ? "site-header-light" : ""}`} aria-label="Menu principal">
+      <header className="site-header" aria-label="Menu principal">
+        <img
+          className={`site-header-logo ${showPersistentLogo ? "site-header-logo-visible" : ""}`}
+          src={persistentLogoSrc}
+          alt="Instituto Futuro Atípico"
+          aria-hidden={!showPersistentLogo}
+        />
         <button
-          className="menu-button"
+          className={`menu-button ${menuOpen ? "menu-button-open" : ""}`}
           type="button"
           aria-label={menuOpen ? "Fechar menu" : "Abrir menu"}
+          aria-expanded={menuOpen}
+          aria-controls="site-navigation-menu"
           onClick={() => setMenuOpen((current) => !current)}
         >
-          {menuOpen ? <X size={28} /> : <img src={asset(useLightMenu ? "BOTAO MENU 2.png" : "BOTAO MENU.png")} alt="" />}
+          <span className="menu-icon" aria-hidden="true">
+            <span />
+            <span />
+            <span />
+          </span>
         </button>
       </header>
 
@@ -290,15 +565,41 @@ function App() {
         ) : activeIndex === 3 ? (
           <FourthSection key="continuidade" goToNext={() => goToSection(4)} />
         ) : activeIndex === 4 ? (
-          <StoriesSection key="histórias" goToNext={() => goToSection(5)} />
+          <StoriesSection
+            key="histórias"
+            goToNext={() => {
+              setConversationMobilePage(0);
+              goToSection(5);
+            }}
+          />
         ) : activeIndex === 5 ? (
-          <FifthSection key="conversa" goToNext={() => goToSection(6)} />
+          <FifthSection
+            key="conversa"
+            isMobileViewport={isMobileViewport}
+            mobilePage={conversationMobilePage}
+            goToNext={() => navigateByDirection(1)}
+          />
         ) : activeIndex === 6 ? (
-          <WhoWeAreSection key="quem-somos" goToNext={() => goToSection(7)} />
+          <WhoWeAreSection
+            key="quem-somos"
+            isMobileViewport={isMobileViewport}
+            mobilePage={whoMobilePage}
+            goToNext={() => navigateByDirection(1)}
+          />
         ) : activeIndex === 7 ? (
-          <FoundersSection key="quem-construiu" goToNext={() => goToSection(8)} />
+          <FoundersSection
+            key="quem-construiu"
+            isMobileViewport={isMobileViewport}
+            mobilePage={foundersMobilePage}
+            goToNext={() => navigateByDirection(1)}
+          />
         ) : activeIndex === 8 ? (
-          <PartnerSection key="parceiro" goToNext={() => goToSection(9)} />
+          <PartnerSection
+            key="parceiro"
+            isMobileViewport={isMobileViewport}
+            mobilePage={partnerMobilePage}
+            goToNext={() => navigateByDirection(1)}
+          />
         ) : activeIndex === 9 ? (
           <ExploreSection key="explore" goToNext={() => goToSection(10)} />
         ) : activeIndex === 10 ? (
@@ -332,26 +633,75 @@ function App() {
 
       <AnimatePresence>
         {menuOpen && (
-          <motion.nav
-            className="mobile-menu"
-            initial={{ opacity: 0, y: -12 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -12 }}
-            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {sections.map((section, index) => (
-              <button
-                key={section.id}
-                type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  goToSection(index);
-                }}
-              >
-                {section.eyebrow}
-              </button>
-            ))}
-          </motion.nav>
+          <>
+            <motion.button
+              key="menu-backdrop"
+              className="mobile-menu-backdrop"
+              type="button"
+              aria-label="Fechar menu"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.24 }}
+              onClick={() => setMenuOpen(false)}
+            />
+            <motion.nav
+              key="menu-panel"
+              id="site-navigation-menu"
+              className="mobile-menu"
+              aria-label="Navegação principal"
+              initial={{ opacity: 0, x: 18, scale: 0.985 }}
+              animate={{ opacity: 1, x: 0, scale: 1 }}
+              exit={{ opacity: 0, x: 14, scale: 0.99 }}
+              transition={{ duration: 0.32, ease: [0.22, 1, 0.36, 1] }}
+            >
+              <header className="mobile-menu-heading">
+                <div>
+                  <span className="mobile-menu-kicker">Navegação</span>
+                  <h2>Explore o Instituto</h2>
+                </div>
+                <span className="mobile-menu-progress" aria-label={`Seção ${activeIndex + 1} de ${sections.length}`}>
+                  {String(activeIndex + 1).padStart(2, "0")}
+                  <small>/ {String(sections.length).padStart(2, "0")}</small>
+                </span>
+              </header>
+
+              <div className="mobile-menu-list">
+                {sections.map((section, index) => (
+                  <button
+                    key={section.id}
+                    className={`mobile-menu-item mobile-menu-accent-${index % 4} ${
+                      index === activeIndex ? "mobile-menu-item-active" : ""
+                    }`}
+                    type="button"
+                    aria-current={index === activeIndex ? "page" : undefined}
+                    onClick={() => {
+                      setMenuOpen(false);
+                      if (index === 5) {
+                        setConversationMobilePage(0);
+                      }
+                      if (index === 6) {
+                        setWhoMobilePage(0);
+                      }
+                      if (index === 7) {
+                        setFoundersMobilePage(0);
+                      }
+                      if (index === 8) {
+                        setPartnerMobilePage(0);
+                      }
+                      goToSection(index);
+                    }}
+                  >
+                    <span className="mobile-menu-index">{String(index + 1).padStart(2, "0")}</span>
+                    <span className="mobile-menu-label">{section.eyebrow}</span>
+                    <ArrowRight className="mobile-menu-arrow" aria-hidden="true" />
+                  </button>
+                ))}
+              </div>
+
+              <p className="mobile-menu-footer">Selecione uma seção para continuar.</p>
+            </motion.nav>
+          </>
         )}
       </AnimatePresence>
 
@@ -625,6 +975,37 @@ function LightSectionBackground({ className = "" }: { className?: string }) {
   );
 }
 
+function DarkSectionBackground({ className = "" }: { className?: string }) {
+  return (
+    <div className={`dark-section-background ${className}`.trim()} aria-hidden="true">
+      <img className="dark-section-background-base" src={asset("fundo escuro.png")} alt="" />
+      <div className="dark-section-background-corners">
+        <img className="dark-section-corner dark-section-corner-red" src={asset("vermelho2.svg")} alt="" />
+        <img className="dark-section-corner dark-section-corner-teal" src={asset("azul claro2.svg")} alt="" />
+        <img className="dark-section-corner dark-section-corner-blue" src={asset("azul escuro2.svg")} alt="" />
+        <img className="dark-section-corner dark-section-corner-orange" src={asset("laranja2.svg")} alt="" />
+      </div>
+    </div>
+  );
+}
+
+function ScrollIndicator({
+  tone,
+  className = "",
+}: {
+  tone: "dark" | "light";
+  className?: string;
+}) {
+  return (
+    <span
+      className={`scroll-indicator scroll-indicator-${tone} ${className}`.trim()}
+      aria-hidden="true"
+    >
+      <span className="scroll-indicator-dot" />
+    </span>
+  );
+}
+
 function SecondSection({
   enterImmediately = false,
   exitImmediately = false,
@@ -649,11 +1030,6 @@ function SecondSection({
     >
       <div className="second-stage">
         <LightSectionBackground className="second-light-background" />
-        <img
-          className="second-logo"
-          src={asset("LOGO IFA COLORIDA COMPLETA.png")}
-          alt="Instituto Futuro Atípico"
-        />
         <div className="second-main">
           <img className="family-photo" src={asset("FOTO FAMILIA.png")} alt="Família sorrindo" />
 
@@ -690,10 +1066,7 @@ function SecondSection({
         </div>
 
         <button className="second-mouse" type="button" aria-label="Próxima seção" onClick={goToNext}>
-          <img className="second-legacy-mouse mouse-dark" src={asset("MOUSE.png")} alt="" />
-          <span className="second-scroll-indicator" aria-hidden="true">
-            <span className="second-scroll-indicator-dot" />
-          </span>
+          <ScrollIndicator tone="dark" className="second-scroll-indicator" />
         </button>
       </div>
     </motion.section>
@@ -754,7 +1127,6 @@ function ThirdSection({ goToNext }: { goToNext: () => void }) {
     >
       <div className="third-stage">
         <LightSectionBackground className="third-light-background" />
-        <img className="third-logo" src={asset("LOGO IFA COLORIDA COMPLETA.png")} alt="Instituto Futuro Atípico" />
 
         <div className="third-heading-block">
           <h1>
@@ -792,7 +1164,7 @@ function ThirdSection({ goToNext }: { goToNext: () => void }) {
         </div>
 
         <button className="third-mouse" type="button" aria-label="Próxima seção" onClick={goToNext}>
-          <img className="mouse-dark" src={asset("MOUSE.png")} alt="" />
+          <ScrollIndicator tone="dark" />
         </button>
       </div>
     </motion.section>
@@ -968,7 +1340,6 @@ function FourthSection({ goToNext }: { goToNext: () => void }) {
     >
       <div className="fourth-stage">
         <LightSectionBackground className="fourth-light-background" />
-        <img className="fourth-logo" src={asset("LOGO IFA COLORIDA COMPLETA.png")} alt="Instituto Futuro Atípico" />
 
         <div className="method-kicker">COMO FUNCIONA</div>
 
@@ -1041,7 +1412,7 @@ function FourthSection({ goToNext }: { goToNext: () => void }) {
         </div>
 
         <button className="fourth-mouse" type="button" aria-label="Próxima seção" onClick={goToNext}>
-          <img className="mouse-dark" src={asset("MOUSE.png")} alt="" />
+          <ScrollIndicator tone="dark" />
         </button>
       </div>
     </motion.section>
@@ -1135,6 +1506,7 @@ const feedbacks: Feedback[] = [
 function StoriesSection({ goToNext }: { goToNext: () => void }) {
   const [activeFeedback, setActiveFeedback] = useState(0);
   const [isCarouselPaused, setIsCarouselPaused] = useState(false);
+  const reducedMotion = Boolean(useReducedMotion());
   const nextFeedback = (activeFeedback + 1) % feedbacks.length;
 
   const goToFeedback = (direction: 1 | -1) => {
@@ -1156,16 +1528,21 @@ function StoriesSection({ goToNext }: { goToNext: () => void }) {
   return (
     <motion.section
       className="stories-section"
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -18 }}
-      transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: reducedMotion ? 0.14 : 0.42, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="stories-stage">
-        <img className="stories-background" src={asset("FUNDO HERO.png")} alt="" />
-        <img className="stories-logo" src={asset("LOGO IFA COLORIDA COMPLETA.png")} alt="Instituto Futuro Atípico" />
+        <LightSectionBackground className="stories-light-background" />
 
-        <div className="stories-heading">
+        <motion.div
+          className="stories-heading"
+          custom={{ delay: 0.08, reducedMotion, y: 18 } satisfies GuidedRevealCustom}
+          variants={guidedRevealVariants}
+          initial="hidden"
+          animate="visible"
+        >
           <p>HISTÓRIAS ATENDIDAS</p>
           <h1>
             Relatos que mostram <span className="red">cuidado</span>,
@@ -1181,33 +1558,49 @@ function StoriesSection({ goToNext }: { goToNext: () => void }) {
             <br />{" "}
             <strong>IFA</strong> transformou essa preocupação em planejamento.
           </p>
-        </div>
-
-        <motion.div
-          className="feedback-carousel"
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-          dragElastic={0.12}
-          onPointerDown={() => setIsCarouselPaused(true)}
-          onPointerUp={() => setIsCarouselPaused(false)}
-          onPointerCancel={() => setIsCarouselPaused(false)}
-          onPointerLeave={() => setIsCarouselPaused(false)}
-          onDragEnd={(_, info) => {
-            if (info.offset.x < -70) {
-              goToFeedback(1);
-            }
-            if (info.offset.x > 70) {
-              goToFeedback(-1);
-            }
-          }}
-        >
-          <AnimatePresence mode="popLayout" initial={false}>
-            <FeedbackCard key={`main-${activeFeedback}`} feedback={feedbacks[activeFeedback]} variant="main" />
-            <FeedbackCard key={`preview-${nextFeedback}`} feedback={feedbacks[nextFeedback]} variant="preview" />
-          </AnimatePresence>
         </motion.div>
 
-        <div className="feedback-dots" aria-label="Feedback ativo">
+        <motion.div
+          className="feedback-carousel-shell"
+          custom={{ delay: 0.48, reducedMotion, y: 22 } satisfies GuidedRevealCustom}
+          variants={guidedRevealVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <motion.div
+            className="feedback-carousel-track"
+            drag="x"
+            dragConstraints={{ left: 0, right: 0 }}
+            dragElastic={0.12}
+            onPointerDown={() => setIsCarouselPaused(true)}
+            onPointerUp={() => setIsCarouselPaused(false)}
+            onPointerCancel={() => setIsCarouselPaused(false)}
+            onPointerLeave={() => setIsCarouselPaused(false)}
+            onDragEnd={(_, info) => {
+              setIsCarouselPaused(false);
+              if (info.offset.x < -70) {
+                goToFeedback(1);
+              }
+              if (info.offset.x > 70) {
+                goToFeedback(-1);
+              }
+            }}
+          >
+            <AnimatePresence mode="popLayout" initial={false}>
+              <FeedbackCard key={`main-${activeFeedback}`} feedback={feedbacks[activeFeedback]} variant="main" />
+              <FeedbackCard key={`preview-${nextFeedback}`} feedback={feedbacks[nextFeedback]} variant="preview" />
+            </AnimatePresence>
+          </motion.div>
+        </motion.div>
+
+        <motion.div
+          className="feedback-dots"
+          aria-label="Feedback ativo"
+          custom={{ delay: 0.76, reducedMotion, y: 10 } satisfies GuidedRevealCustom}
+          variants={guidedRevealVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {feedbacks.map((feedback, index) => (
             <button
               key={feedback.role}
@@ -1220,11 +1613,20 @@ function StoriesSection({ goToNext }: { goToNext: () => void }) {
               }}
             />
           ))}
-        </div>
+        </motion.div>
 
-        <button className="stories-mouse" type="button" aria-label="Próxima seção" onClick={goToNext}>
-          <img className="mouse-dark" src={asset("MOUSE.png")} alt="" />
-        </button>
+        <motion.button
+          className="stories-mouse"
+          type="button"
+          aria-label="Próxima seção"
+          onClick={goToNext}
+          custom={{ delay: 0.94, reducedMotion, y: 8 } satisfies GuidedRevealCustom}
+          variants={guidedRevealVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <ScrollIndicator tone="dark" />
+        </motion.button>
       </div>
     </motion.section>
   );
@@ -1267,7 +1669,107 @@ function FeedbackCard({ feedback, variant }: { feedback: Feedback; variant: "mai
   );
 }
 
-function FifthSection({ goToNext }: { goToNext: () => void }) {
+function ConversationCopy() {
+  return (
+    <div className="conversation-copy">
+      <p className="conversation-kicker">CONVERSE COM O IFA</p>
+      <h1>
+        O <span className="orange">futuro</span> do seu{" "}
+        <span className="conversation-title-keep">
+          filho <span className="red">não</span>
+        </span>
+        <br />{" "}
+        precisa depender do
+        <br />{" "}
+        <span className="blue">improviso.</span>
+      </h1>
+      <p className="conversation-text">
+        Em uma conversa consultiva, o <strong>IFA</strong> entende a
+        <br />{" "}
+        realidade de sua família e ajuda <strong>você</strong> a enxergar
+        <br />{" "}
+        caminhos possíveis para proteger o cuidado, a rotina
+        <br />{" "}
+        e a segurança de quem mais depende de <strong>você.</strong>
+      </p>
+
+      <button className="conversation-button conversation-button-primary" type="button">
+        Fale agora com o IFA
+      </button>
+      <button className="conversation-button conversation-button-outline" type="button">
+        Entender melhor como funciona
+      </button>
+    </div>
+  );
+}
+
+function ConversationCard() {
+  return (
+    <article className="conversation-card" aria-labelledby="conversation-card-title">
+      <header className="conversation-card-header">
+        <span className="conversation-card-heading-icon" aria-hidden="true">
+          <MessageCircle />
+        </span>
+        <h2 id="conversation-card-title">O que acontece na conversa?</h2>
+      </header>
+
+      <ol className="conversation-steps">
+        <li>
+          <span className="conversation-step-number">1</span>
+          <UsersRound className="conversation-step-icon" aria-hidden="true" />
+          <p>Entendimento da sua rotina familiar</p>
+        </li>
+        <li>
+          <span className="conversation-step-number">2</span>
+          <ClipboardCheck className="conversation-step-icon" aria-hidden="true" />
+          <p>Mapeamento dos riscos e preocupações</p>
+        </li>
+        <li>
+          <span className="conversation-step-number">3</span>
+          <span className="conversation-step-icon conversation-shield-heart" aria-hidden="true">
+            <Shield />
+            <Heart />
+          </span>
+          <p>Primeira visão sobre caminhos de proteção</p>
+        </li>
+      </ol>
+
+      <footer className="conversation-card-footer">
+        <span className="conversation-card-dot" aria-hidden="true" />
+        <p>
+          Você não precisa chegar com tudo pronto.
+          <br />{" "}
+          O papel do IFA é ajudar sua família a organizar
+          <br />{" "}
+          o que hoje parece difícil de enxergar.
+        </p>
+      </footer>
+    </article>
+  );
+}
+
+function ConversationMobileActions() {
+  return (
+    <div className="conversation-mobile-card-actions">
+      <button className="conversation-button conversation-button-primary" type="button">
+        Fale agora com o IFA
+      </button>
+      <button className="conversation-button conversation-button-outline" type="button">
+        Entender melhor como funciona
+      </button>
+    </div>
+  );
+}
+
+function FifthSection({
+  goToNext,
+  isMobileViewport,
+  mobilePage,
+}: {
+  goToNext: () => void;
+  isMobileViewport: boolean;
+  mobilePage: 0 | 1;
+}) {
   return (
     <motion.section
       className="fifth-section"
@@ -1284,88 +1786,61 @@ function FifthSection({ goToNext }: { goToNext: () => void }) {
           <img className="fifth-corner fifth-corner-blue" src={asset("azul escuro2.svg")} alt="" />
           <img className="fifth-corner fifth-corner-orange" src={asset("laranja2.svg")} alt="" />
         </div>
-        <img
-          className="fifth-logo"
-          src={asset("LOGO IFA COLORIDA COMPLETA FUNDO ESCURO.png")}
-          alt="Instituto Futuro Atípico"
-        />
 
-        <div className="conversation-layout">
-          <div className="conversation-copy">
-            <p className="conversation-kicker">CONVERSE COM O IFA</p>
-            <h1>
-              O <span className="orange">futuro</span> do seu{" "}
-              <span className="conversation-title-keep">
-                filho <span className="red">não</span>
-              </span>
-              <br />{" "}
-              precisa depender do
-              <br />{" "}
-              <span className="blue">improviso.</span>
-            </h1>
-            <p className="conversation-text">
-              Em uma conversa consultiva, o <strong>IFA</strong> entende a
-              <br />{" "}
-              realidade de sua família e ajuda <strong>você</strong> a enxergar
-              <br />{" "}
-              caminhos possíveis para proteger o cuidado, a rotina
-              <br />{" "}
-              e a segurança de quem mais depende de <strong>você.</strong>
-            </p>
-
-            <button className="conversation-button conversation-button-primary" type="button">
-              Fale agora com o IFA
+        {isMobileViewport ? (
+          <AnimatePresence mode="wait" initial={false}>
+            {mobilePage === 0 ? (
+              <motion.div
+                key="conversation-mobile-copy"
+                className="conversation-mobile-page conversation-mobile-copy-page"
+                initial={{ opacity: 0, y: 22 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -18 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <ConversationCopy />
+                <button
+                  className="fifth-mouse"
+                  type="button"
+                  aria-label="Próxima seção"
+                  onClick={goToNext}
+                >
+                  <ScrollIndicator tone="light" />
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="conversation-mobile-card"
+                className="conversation-mobile-page conversation-mobile-card-page"
+                initial={{ opacity: 0, y: 22 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -18 }}
+                transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <ConversationCard />
+                <ConversationMobileActions />
+                <button
+                  className="fifth-mouse"
+                  type="button"
+                  aria-label="Próxima seção"
+                  onClick={goToNext}
+                >
+                  <ScrollIndicator tone="light" />
+                </button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        ) : (
+          <>
+            <div className="conversation-layout">
+              <ConversationCopy />
+              <ConversationCard />
+            </div>
+            <button className="fifth-mouse" type="button" aria-label="Próxima seção" onClick={goToNext}>
+              <ScrollIndicator tone="light" />
             </button>
-            <button className="conversation-button conversation-button-outline" type="button">
-              Entender melhor como funciona
-            </button>
-          </div>
-
-          <article className="conversation-card" aria-labelledby="conversation-card-title">
-            <header className="conversation-card-header">
-              <span className="conversation-card-heading-icon" aria-hidden="true">
-                <MessageCircle />
-              </span>
-              <h2 id="conversation-card-title">O que acontece na conversa?</h2>
-            </header>
-
-            <ol className="conversation-steps">
-              <li>
-                <span className="conversation-step-number">1</span>
-                <UsersRound className="conversation-step-icon" aria-hidden="true" />
-                <p>Entendimento da sua rotina familiar</p>
-              </li>
-              <li>
-                <span className="conversation-step-number">2</span>
-                <ClipboardCheck className="conversation-step-icon" aria-hidden="true" />
-                <p>Mapeamento dos riscos e preocupações</p>
-              </li>
-              <li>
-                <span className="conversation-step-number">3</span>
-                <span className="conversation-step-icon conversation-shield-heart" aria-hidden="true">
-                  <Shield />
-                  <Heart />
-                </span>
-                <p>Primeira visão sobre caminhos de proteção</p>
-              </li>
-            </ol>
-
-            <footer className="conversation-card-footer">
-              <span className="conversation-card-dot" aria-hidden="true" />
-              <p>
-                Você não precisa chegar com tudo pronto.
-                <br />
-                O papel do IFA é ajudar sua família a organizar
-                <br />
-                o que hoje parece difícil de enxergar.
-              </p>
-            </footer>
-          </article>
-        </div>
-
-        <button className="fifth-mouse" type="button" aria-label="Próxima seção" onClick={goToNext}>
-          <img src={asset("MOUSE.png")} alt="" />
-        </button>
+          </>
+        )}
       </div>
     </motion.section>
   );
@@ -1406,92 +1881,249 @@ const whoChips = [
   { accent: "#B53C3C", icon: Network, label: "Rede de confiança" },
 ];
 
-function WhoWeAreSection({ goToNext }: { goToNext: () => void }) {
+type GuidedRevealCustom = {
+  delay: number;
+  reducedMotion: boolean;
+  x?: number;
+  y?: number;
+};
+
+const guidedRevealVariants: Variants = {
+  hidden: ({ reducedMotion, x = 0, y = 0 }: GuidedRevealCustom) => ({
+    opacity: 0,
+    x: reducedMotion ? 0 : x,
+    y: reducedMotion ? 0 : y,
+  }),
+  visible: ({ delay, reducedMotion }: GuidedRevealCustom) => ({
+    opacity: 1,
+    x: 0,
+    y: 0,
+    transition: {
+      delay: reducedMotion ? 0 : delay,
+      duration: reducedMotion ? 0.14 : 0.46,
+      ease: [0.22, 1, 0.36, 1],
+    },
+  }),
+};
+
+function WhoHeading({
+  delay,
+  reducedMotion,
+}: {
+  delay: number;
+  reducedMotion: boolean;
+}) {
+  return (
+    <motion.div
+      className="who-heading"
+      custom={{ delay, reducedMotion, y: 18 } satisfies GuidedRevealCustom}
+      variants={guidedRevealVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <p>QUEM SOMOS</p>
+      <h1>
+        O Instituto <span className="orange">Futuro</span>{" "}
+        <span className="teal">Atípico</span> nasceu
+        <br />
+        de uma pergunta simples.
+      </h1>
+      <h2>Quem cuida do futuro de quem dedica a vida a cuidar?</h2>
+      <p className="who-intro">
+        O IFA nasceu da escuta de pais e mães de crianças atípicas e da
+        <br />
+        necessidade de transformar uma preocupação silenciosa em planejamento concreto.
+      </p>
+    </motion.div>
+  );
+}
+
+function WhoLeftCards({
+  reducedMotion,
+  startDelay,
+}: {
+  reducedMotion: boolean;
+  startDelay: number;
+}) {
+  return (
+    <div className="who-left-cards">
+      {whoCards.map((card, index) => (
+        <InfoCard
+          key={card.title}
+          {...card}
+          reveal={{
+            delay: startDelay + index * 0.12,
+            reducedMotion,
+            x: -22,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function WhoRightBlock({
+  reducedMotion,
+  startDelay,
+}: {
+  reducedMotion: boolean;
+  startDelay: number;
+}) {
+  return (
+    <div className="who-right-block">
+      <motion.h2
+        custom={{ delay: startDelay, reducedMotion, x: 18 } satisfies GuidedRevealCustom}
+        variants={guidedRevealVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        Uma iniciativa criada para transformar preocupação em <span>planejamento.</span>
+      </motion.h2>
+      <motion.p
+        custom={{ delay: startDelay + 0.16, reducedMotion, x: 18 } satisfies GuidedRevealCustom}
+        variants={guidedRevealVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        O Instituto Futuro Atípico não nasceu como uma seguradora, uma clínica ou uma
+        consultoria tradicional. Nasceu como uma iniciativa para reunir conhecimento,
+        planejamento financeiro e uma rede de profissionais preparados para apoiar famílias que
+        vivem a realidade atípica todos os dias. Nosso propósito é ajudar pais e mães a organizarem
+        o futuro com mais clareza, segurança e acolhimento.
+      </motion.p>
+
+      <motion.div
+        className="who-feature-card"
+        custom={{ delay: startDelay + 0.32, reducedMotion, x: 18 } satisfies GuidedRevealCustom}
+        variants={guidedRevealVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <div>
+          <ShieldCheck />
+        </div>
+        <p>
+          <strong>Não somos uma seguradora.</strong>
+          <br />
+          <strong>Não somos uma clínica.</strong>
+          <br />
+          <span>Somos uma rede de planejamento, proteção e confiança.</span>
+        </p>
+      </motion.div>
+
+      <div className="who-chip-row">
+        {whoChips.map((chip, index) => {
+          const Icon = chip.icon;
+          return (
+            <motion.div
+              className="who-mini-card"
+              key={chip.label}
+              style={{ "--who-accent": chip.accent } as React.CSSProperties}
+              custom={{
+                delay: startDelay + 0.52 + index * 0.1,
+                reducedMotion,
+                x: 18,
+              } satisfies GuidedRevealCustom}
+              variants={guidedRevealVariants}
+              initial="hidden"
+              animate="visible"
+            >
+              <Icon />
+              <span>{chip.label}</span>
+            </motion.div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function WhoScrollButton({
+  delay,
+  goToNext,
+  reducedMotion,
+}: {
+  delay: number;
+  goToNext: () => void;
+  reducedMotion: boolean;
+}) {
+  return (
+    <motion.button
+      className="who-mouse"
+      type="button"
+      aria-label="Próxima seção"
+      onClick={goToNext}
+      custom={{ delay, reducedMotion, y: 12 } satisfies GuidedRevealCustom}
+      variants={guidedRevealVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <ScrollIndicator tone="dark" />
+    </motion.button>
+  );
+}
+
+function WhoWeAreSection({
+  goToNext,
+  isMobileViewport,
+  mobilePage,
+}: {
+  goToNext: () => void;
+  isMobileViewport: boolean;
+  mobilePage: 0 | 1;
+}) {
+  const reducedMotion = useReducedMotion() ?? false;
+
   return (
     <motion.section
       className="who-section"
-      initial={{ opacity: 0, y: 18 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -18 }}
-      transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: reducedMotion ? 0.14 : 0.28, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="who-stage">
-        <img className="who-background" src={asset("FUNDO HERO.png")} alt="" />
-        <img className="who-logo" src={asset("LOGO IFA COLORIDA COMPLETA.png")} alt="Instituto Futuro Atípico" />
+      <div className="who-stage" data-local-scroll>
+        <LightSectionBackground className="who-light-background" />
 
-        <div className="who-heading">
-          <p>QUEM SOMOS</p>
-          <h1>
-            O Instituto <span className="orange">Futuro</span>{" "}
-            <span className="teal">Atípico</span> nasceu
-            <br />
-            de uma pergunta simples.
-          </h1>
-          <h2>Quem cuida do futuro de quem dedica a vida a cuidar?</h2>
-          <p className="who-intro">
-            O IFA nasceu da escuta de pais e mães de crianças atípicas e da
-            <br />
-            necessidade de transformar uma preocupação silenciosa em planejamento concreto.
-          </p>
-        </div>
-
-        <div className="who-left-cards">
-          {whoCards.map((card) => (
-            <InfoCard key={card.title} {...card} />
-          ))}
-        </div>
-
-        <div className="who-right-block">
-          <h2>
-            Uma iniciativa criada para transformar
-            <br />
-            preocupação em <span>planejamento.</span>
-          </h2>
-          <p>
-            O Instituto Futuro Atípico não nasceu como uma seguradora, uma
-            <br />
-            clínica ou uma consultoria tradicional. Nasceu como uma iniciativa
-            <br />
-            para reunir conhecimento, planejamento financeiro e uma rede
-            <br />
-            de profissionais preparados para apoiar famílias que vivem a
-            <br />
-            realidade atípica todos os dias. Nosso propósito é ajudar pais e
-            <br />
-            mães a organizarem o futuro com mais clareza, segurança e
-            <br />
-            acolhimento.
-          </p>
-
-          <div className="who-feature-card">
-            <div>
-              <ShieldCheck />
+        {isMobileViewport ? (
+          <AnimatePresence mode="wait" initial={false}>
+            {mobilePage === 0 ? (
+              <motion.div
+                key="who-mobile-overview"
+                className="who-mobile-page who-mobile-overview-page"
+                initial={false}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, y: reducedMotion ? 0 : -12 }}
+                transition={{ duration: reducedMotion ? 0.14 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <WhoHeading delay={0.08} reducedMotion={reducedMotion} />
+                <WhoLeftCards startDelay={0.54} reducedMotion={reducedMotion} />
+                <WhoScrollButton delay={1.46} goToNext={goToNext} reducedMotion={reducedMotion} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="who-mobile-details"
+                className="who-mobile-page who-mobile-detail-page"
+                initial={false}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, y: reducedMotion ? 0 : -12 }}
+                transition={{ duration: reducedMotion ? 0.14 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <WhoRightBlock startDelay={0.08} reducedMotion={reducedMotion} />
+                <WhoScrollButton delay={1.38} goToNext={goToNext} reducedMotion={reducedMotion} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        ) : (
+          <>
+            <WhoHeading delay={0.1} reducedMotion={reducedMotion} />
+            <div className="who-columns">
+              <WhoLeftCards startDelay={0.58} reducedMotion={reducedMotion} />
+              <WhoRightBlock startDelay={1.38} reducedMotion={reducedMotion} />
             </div>
-            <p>
-              <strong>Não somos uma seguradora.</strong>
-              <br />
-              <strong>Não somos uma clínica.</strong>
-              <br />
-              <span>Somos uma rede de planejamento, proteção e confiança.</span>
-            </p>
-          </div>
-
-          <div className="who-chip-row">
-            {whoChips.map((chip) => {
-              const Icon = chip.icon;
-              return (
-                <div className="who-mini-card" key={chip.label} style={{ "--who-accent": chip.accent } as React.CSSProperties}>
-                  <Icon />
-                  <span>{chip.label}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <button className="who-mouse" type="button" aria-label="Próxima seção" onClick={goToNext}>
-          <img className="mouse-dark" src={asset("MOUSE.png")} alt="" />
-        </button>
+            <WhoScrollButton delay={2.55} goToNext={goToNext} reducedMotion={reducedMotion} />
+          </>
+        )}
       </div>
     </motion.section>
   );
@@ -1501,15 +2133,24 @@ function InfoCard({
   accent,
   copy,
   icon: Icon,
+  reveal,
   title,
 }: {
   accent: string;
   copy: string;
   icon: typeof Ear;
+  reveal: GuidedRevealCustom;
   title: string;
 }) {
   return (
-    <article className="who-info-card" style={{ "--who-accent": accent } as React.CSSProperties}>
+    <motion.article
+      className="who-info-card"
+      style={{ "--who-accent": accent } as React.CSSProperties}
+      custom={reveal}
+      variants={guidedRevealVariants}
+      initial="hidden"
+      animate="visible"
+    >
       <div className="who-info-icon">
         <Icon />
       </div>
@@ -1517,7 +2158,7 @@ function InfoCard({
         <h3>{title}</h3>
         <p>{copy}</p>
       </div>
-    </article>
+    </motion.article>
   );
 }
 
@@ -1533,7 +2174,7 @@ const founderCards = [
   {
     accent: "#0D8F8F",
     icon: Stethoscope,
-    name: "Dr. Rodrigo Cunha",
+    name: "Dr. Rodrigo Cunha Braga",
     role: "Sócio | Médico Psiquiatra",
     copy:
       "Com experiência no atendimento de pacientes e famílias atípicas, Rodrigo traz ao IFA um olhar clínico e humano sobre os desafios dessa jornada.",
@@ -1548,57 +2189,197 @@ const founderCards = [
   },
 ];
 
-function FoundersSection({ goToNext }: { goToNext: () => void }) {
+function FoundersHeading({
+  delay,
+  reducedMotion,
+}: {
+  delay: number;
+  reducedMotion: boolean;
+}) {
+  return (
+    <motion.div
+      className="founders-heading"
+      custom={{ delay, reducedMotion, y: 18 } satisfies GuidedRevealCustom}
+      variants={guidedRevealVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <p>QUEM CONSTRUIU ESSE PROJETO</p>
+      <h1>
+        Três trajetórias diferentes,
+        <br />
+        um <span className="orange">mesmo</span> <span className="teal">propósito.</span>
+      </h1>
+      <p className="founders-copy">
+        O IFA reúne profissionais de áreas complementares para ajudar
+        <br />
+        famílias atípicas a protegerem aquilo que têm de mais importante:
+        <br />a continuidade do cuidado.
+      </p>
+    </motion.div>
+  );
+}
+
+function FoundersPhoto({
+  delay,
+  reducedMotion,
+}: {
+  delay: number;
+  reducedMotion: boolean;
+}) {
+  return (
+    <motion.figure
+      className="founders-photo"
+      custom={{ delay, reducedMotion, x: -22 } satisfies GuidedRevealCustom}
+      variants={guidedRevealVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <img src={asset("SOCIOS.jpeg")} alt="Equipe fundadora do IFA" />
+      <figcaption>Equipe fundadora do IFA</figcaption>
+    </motion.figure>
+  );
+}
+
+function FoundersCards({
+  reducedMotion,
+  startDelay,
+}: {
+  reducedMotion: boolean;
+  startDelay: number;
+}) {
+  return (
+    <div className="founders-card-list">
+      {founderCards.map((card, index) => (
+        <FounderCard
+          key={card.name}
+          {...card}
+          reveal={{
+            delay: startDelay + index * 0.13,
+            reducedMotion,
+            x: 18,
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function FoundersFooterCard({
+  delay,
+  reducedMotion,
+}: {
+  delay: number;
+  reducedMotion: boolean;
+}) {
+  return (
+    <motion.div
+      className="founders-footer-card"
+      custom={{ delay, reducedMotion, y: 16 } satisfies GuidedRevealCustom}
+      variants={guidedRevealVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <UsersRound />
+      <p>
+        O que nos une é a certeza de que <strong className="teal">famílias atípicas</strong> precisam de{" "}
+        <strong className="orange">plano</strong>, <strong className="teal">orientação</strong> e{" "}
+        <span className="founders-footer-nowrap">
+          uma <strong className="orange">rede de confiança.</strong>
+        </span>
+      </p>
+    </motion.div>
+  );
+}
+
+function FoundersScrollButton({
+  delay,
+  goToNext,
+  reducedMotion,
+}: {
+  delay: number;
+  goToNext: () => void;
+  reducedMotion: boolean;
+}) {
+  return (
+    <motion.button
+      className="founders-mouse"
+      type="button"
+      aria-label="Próxima seção"
+      onClick={goToNext}
+      custom={{ delay, reducedMotion, y: 12 } satisfies GuidedRevealCustom}
+      variants={guidedRevealVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <ScrollIndicator tone="dark" />
+    </motion.button>
+  );
+}
+
+function FoundersSection({
+  goToNext,
+  isMobileViewport,
+  mobilePage,
+}: {
+  goToNext: () => void;
+  isMobileViewport: boolean;
+  mobilePage: 0 | 1;
+}) {
+  const reducedMotion = useReducedMotion() ?? false;
+
   return (
     <motion.section
       className="founders-section"
-      initial={{ opacity: 0, y: 18 }}
+      initial={false}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -18 }}
-      transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: reducedMotion ? 0.14 : 0.28, ease: [0.22, 1, 0.36, 1] }}
     >
-      <div className="founders-stage">
-        <img className="founders-background" src={asset("FUNDO HERO.png")} alt="" />
-        <img className="founders-logo" src={asset("LOGO IFA COLORIDA COMPLETA.png")} alt="Instituto Futuro Atípico" />
+      <div className="founders-stage" data-local-scroll>
+        <LightSectionBackground className="founders-light-background" />
 
-        <div className="founders-heading">
-          <p>QUEM CONSTRUIU ESSE PROJETO</p>
-          <h1>
-            Três trajetórias diferentes,
-            <br />
-            um <span className="orange">mesmo</span> <span className="teal">propósito.</span>
-          </h1>
-          <p className="founders-copy">
-            O IFA reúne profissionais de áreas complementares para ajudar
-            <br />
-            famílias atípicas a protegerem aquilo que têm de mais importante:
-            <br />a continuidade do cuidado.
-          </p>
-        </div>
-
-        <figure className="founders-photo">
-          <img src={asset("SOCIOS.jpeg")} alt="Equipe fundadora do IFA" />
-          <figcaption>Equipe fundadora do IFA</figcaption>
-        </figure>
-
-        <div className="founders-card-list">
-          {founderCards.map((card) => (
-            <FounderCard key={card.name} {...card} />
-          ))}
-        </div>
-
-        <div className="founders-footer-card">
-          <UsersRound />
-          <p>
-            O que nos une é a certeza de que <strong className="teal">famílias atípicas</strong> precisam de{" "}
-            <strong className="orange">plano</strong>, <strong className="teal">orientação</strong> e uma{" "}
-            <strong className="orange">rede de confiança.</strong>
-          </p>
-        </div>
-
-        <button className="founders-mouse" type="button" aria-label="Próxima seção" onClick={goToNext}>
-          <img className="mouse-dark" src={asset("MOUSE.png")} alt="" />
-        </button>
+        {isMobileViewport ? (
+          <AnimatePresence mode="wait" initial={false}>
+            {mobilePage === 0 ? (
+              <motion.div
+                key="founders-mobile-overview"
+                className="founders-mobile-page founders-mobile-overview-page"
+                initial={false}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, y: reducedMotion ? 0 : -12 }}
+                transition={{ duration: reducedMotion ? 0.14 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <FoundersHeading delay={0.08} reducedMotion={reducedMotion} />
+                <FoundersPhoto delay={0.58} reducedMotion={reducedMotion} />
+                <FoundersScrollButton delay={1.12} goToNext={goToNext} reducedMotion={reducedMotion} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="founders-mobile-profiles"
+                className="founders-mobile-page founders-mobile-profiles-page"
+                initial={false}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, y: reducedMotion ? 0 : -12 }}
+                transition={{ duration: reducedMotion ? 0.14 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <FoundersCards startDelay={0.08} reducedMotion={reducedMotion} />
+                <FoundersFooterCard delay={0.72} reducedMotion={reducedMotion} />
+                <FoundersScrollButton delay={1.15} goToNext={goToNext} reducedMotion={reducedMotion} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        ) : (
+          <>
+            <FoundersHeading delay={0.1} reducedMotion={reducedMotion} />
+            <div className="founders-content">
+              <FoundersPhoto delay={0.62} reducedMotion={reducedMotion} />
+              <FoundersCards startDelay={1.08} reducedMotion={reducedMotion} />
+            </div>
+            <FoundersFooterCard delay={1.78} reducedMotion={reducedMotion} />
+            <FoundersScrollButton delay={2.15} goToNext={goToNext} reducedMotion={reducedMotion} />
+          </>
+        )}
       </div>
     </motion.section>
   );
@@ -1609,16 +2390,25 @@ function FounderCard({
   copy,
   icon: Icon,
   name,
+  reveal,
   role,
 }: {
   accent: string;
   copy: string;
   icon: typeof BriefcaseBusiness;
   name: string;
+  reveal: GuidedRevealCustom;
   role: string;
 }) {
   return (
-    <article className="founder-card" style={{ "--founder-accent": accent } as React.CSSProperties}>
+    <motion.article
+      className="founder-card"
+      style={{ "--founder-accent": accent } as React.CSSProperties}
+      custom={reveal}
+      variants={guidedRevealVariants}
+      initial="hidden"
+      animate="visible"
+    >
       <div className="founder-icon">
         <Icon />
       </div>
@@ -1627,7 +2417,7 @@ function FounderCard({
         <p className="founder-role">{role}</p>
         <p className="founder-copy">{copy}</p>
       </div>
-    </article>
+    </motion.article>
   );
 }
 
@@ -1640,163 +2430,323 @@ const partnerTargets = [
   "Educação inclusiva",
 ];
 
-function PartnerSection({ goToNext }: { goToNext: () => void }) {
+function PartnerHeading({
+  delay,
+  reducedMotion,
+}: {
+  delay: number;
+  reducedMotion: boolean;
+}) {
+  return (
+    <motion.div
+      className="partner-heading"
+      custom={{ delay, reducedMotion, y: 18 } satisfies GuidedRevealCustom}
+      variants={guidedRevealVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <p>SEJA UM PARCEIRO</p>
+      <h1>
+        Faça parte da <span className="orange">rede</span> que apoia famílias atípicas com{" "}
+        <span className="blue">responsabilidade.</span>
+      </h1>
+      <p className="partner-copy">
+        Se <strong>você</strong> atende, orienta ou acompanha famílias atípicas, o <strong>IFA</strong> pode caminhar
+        ao seu lado para ampliar o acesso à informação, planejamento e proteção financeira familiar.
+      </p>
+    </motion.div>
+  );
+}
+
+function PartnerWoman({
+  delay,
+  reducedMotion,
+}: {
+  delay: number;
+  reducedMotion: boolean;
+}) {
+  return (
+    <motion.img
+      className="partner-woman"
+      src={asset("MULHER IFA.png")}
+      alt="Representante IFA"
+      custom={{ delay, reducedMotion, y: 18 } satisfies GuidedRevealCustom}
+      variants={guidedRevealVariants}
+      initial="hidden"
+      animate="visible"
+    />
+  );
+}
+
+function PartnerLeftCard({
+  delay,
+  reducedMotion,
+}: {
+  delay: number;
+  reducedMotion: boolean;
+}) {
+  return (
+    <motion.article
+      className="partner-left-card"
+      custom={{ delay, reducedMotion, x: -20 } satisfies GuidedRevealCustom}
+      variants={guidedRevealVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <h2>
+        Essa <span>parceria</span> pode fazer sentido para:
+      </h2>
+      <ul>
+        {partnerTargets.map((target) => (
+          <li key={target}>{target}</li>
+        ))}
+      </ul>
+    </motion.article>
+  );
+}
+
+function PartnerRightCard({
+  delay,
+  reducedMotion,
+}: {
+  delay: number;
+  reducedMotion: boolean;
+}) {
+  return (
+    <motion.article
+      className="partner-right-card"
+      custom={{ delay, reducedMotion, x: 20 } satisfies GuidedRevealCustom}
+      variants={guidedRevealVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <h2>
+        Quer construir essa{" "}
+        <span className="partner-title-nowrap">
+          ponte com o{" "}
+          <span className="ifa-letters">
+            <span>I</span>
+            <span>F</span>
+            <span>A</span>
+          </span>
+          ?
+        </span>
+      </h2>
+      <p>
+        Preencha o formulário de parceria e conte como você ou sua instituição pode contribuir com essa rede de cuidado.
+      </p>
+      <button type="button">
+        Quero ser parceiro
+        <img src={asset("LOGO IFA BOTAO.png")} alt="" />
+      </button>
+      <div className="partner-secure-note">
+        <img className="partner-lock" src={asset("cadeado.png")} alt="" />
+        <p>Você será direcionado para um formulário rápido e seguro.</p>
+      </div>
+    </motion.article>
+  );
+}
+
+function PartnerScrollButton({
+  delay,
+  goToNext,
+  reducedMotion,
+}: {
+  delay: number;
+  goToNext: () => void;
+  reducedMotion: boolean;
+}) {
+  return (
+    <motion.button
+      className="partner-mouse"
+      type="button"
+      aria-label="Próxima seção"
+      onClick={goToNext}
+      custom={{ delay, reducedMotion, y: 12 } satisfies GuidedRevealCustom}
+      variants={guidedRevealVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      <ScrollIndicator tone="dark" />
+    </motion.button>
+  );
+}
+
+function PartnerSection({
+  goToNext,
+  isMobileViewport,
+  mobilePage,
+}: {
+  goToNext: () => void;
+  isMobileViewport: boolean;
+  mobilePage: 0 | 1;
+}) {
+  const reducedMotion = useReducedMotion() ?? false;
+
   return (
     <motion.section
       className="partner-section"
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -18 }}
-      transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+      initial={false}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: reducedMotion ? 0.14 : 0.28, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="partner-stage">
-        <img className="partner-background" src={asset("FUNDO HERO.png")} alt="" />
-        <img className="partner-logo" src={asset("LOGO IFA COLORIDA COMPLETA.png")} alt="Instituto Futuro Atípico" />
+        <LightSectionBackground className="partner-light-background" />
 
-        <div className="partner-heading">
-          <p>SEJA UM PARCEIRO</p>
-          <h1>
-            Faça parte da <span className="orange">rede</span> que apoia famílias
-            <br />{" "}
-            atípicas com <span className="blue">responsabilidade.</span>
-          </h1>
-          <p className="partner-copy">
-            Se <strong>você</strong> atende, orienta ou acompanha famílias atípicas, o <strong>IFA</strong> pode caminhar
-            <br />{" "}
-            ao seu lado para ampliar o acesso à informação, planejamento e proteção
-            <br />{" "}
-            financeira familiar.
-          </p>
-        </div>
-
-        <div className="partner-left-card">
-          <h2>
-            Essa <span>parceria</span> pode fazer
-            <br />{" "}
-            sentido para:
-          </h2>
-          <ul>
-            {partnerTargets.map((target) => (
-              <li key={target}>{target}</li>
-            ))}
-          </ul>
-        </div>
-
-        <img className="partner-woman" src={asset("MULHER IFA.png")} alt="Representante IFA" />
-
-        <div className="partner-right-card">
-          <h2>
-            Quer construir essa
-            <br />{" "}
-            ponte com o{" "}
-            <span className="ifa-letters">
-              <span>I</span>
-              <span>F</span>
-              <span>A</span>
-            </span>
-            ?
-          </h2>
-          <p>
-            Preencha o formulário de parceria
-            <br />{" "}
-            e conte como você ou sua
-            <br />{" "}
-            instituição pode contribuir com
-            <br />{" "}
-            essa rede de cuidado.
-          </p>
-          <button type="button">
-            Quero ser parceiro
-            <img src={asset("LOGO IFA BOTAO.png")} alt="" />
-          </button>
-          <div className="partner-secure-note">
-            <LockKeyhole />
-            <p>
-              Você será direcionado para
-              <br />{" "}
-              um formulário rápido e seguro.
-            </p>
-          </div>
-        </div>
-
-        <button className="partner-mouse" type="button" aria-label="Próxima seção" onClick={goToNext}>
-          <img className="mouse-dark" src={asset("MOUSE.png")} alt="" />
-        </button>
+        {isMobileViewport ? (
+          <AnimatePresence mode="wait" initial={false}>
+            {mobilePage === 0 ? (
+              <motion.div
+                key="partner-mobile-intro"
+                className="partner-mobile-page partner-mobile-intro-page"
+                initial={false}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, y: reducedMotion ? 0 : -12 }}
+                transition={{ duration: reducedMotion ? 0.14 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <PartnerHeading delay={0.08} reducedMotion={reducedMotion} />
+                <PartnerWoman delay={0.58} reducedMotion={reducedMotion} />
+                <PartnerScrollButton delay={1.08} goToNext={goToNext} reducedMotion={reducedMotion} />
+              </motion.div>
+            ) : (
+              <motion.div
+                key="partner-mobile-cards"
+                className="partner-mobile-page partner-mobile-cards-page"
+                initial={false}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, y: reducedMotion ? 0 : -12 }}
+                transition={{ duration: reducedMotion ? 0.14 : 0.28, ease: [0.22, 1, 0.36, 1] }}
+              >
+                <PartnerLeftCard delay={0.08} reducedMotion={reducedMotion} />
+                <PartnerRightCard delay={0.42} reducedMotion={reducedMotion} />
+                <PartnerScrollButton delay={0.92} goToNext={goToNext} reducedMotion={reducedMotion} />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        ) : (
+          <>
+            <PartnerHeading delay={0.1} reducedMotion={reducedMotion} />
+            <div className="partner-content">
+              <PartnerLeftCard delay={1.08} reducedMotion={reducedMotion} />
+              <PartnerWoman delay={0.62} reducedMotion={reducedMotion} />
+              <PartnerRightCard delay={1.34} reducedMotion={reducedMotion} />
+            </div>
+            <PartnerScrollButton delay={1.9} goToNext={goToNext} reducedMotion={reducedMotion} />
+          </>
+        )}
       </div>
     </motion.section>
   );
 }
 
+const exploreDestinations = [
+  {
+    id: "events",
+    title: "Calendário de eventos",
+    description:
+      "Consulte as próximas palestras, encontros e ações do IFA. Encontre oportunidades para aprender, trocar experiências e fortalecer conexões.",
+    indicators: ["Palestras", "Encontros", "Ações"],
+    cta: "Acessar calendário",
+    icon: CalendarDays,
+  },
+  {
+    id: "network",
+    title: "Rede de parceiros",
+    description:
+      "Conheça profissionais, clínicas e serviços alinhados ao cuidado de famílias atípicas. Encontre apoio especializado para cada etapa.",
+    indicators: ["Profissionais", "Clínicas", "Serviços"],
+    cta: "Conhecer parceiros",
+    icon: Network,
+  },
+] as const;
+
 function ExploreSection({ goToNext }: { goToNext: () => void }) {
+  const reducedMotion = Boolean(useReducedMotion());
+  const navigate = useNavigate();
+
   return (
     <motion.section
       className="explore-section"
-      initial={{ opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -18 }}
-      transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: reducedMotion ? 0.14 : 0.42, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="explore-stage">
-        <img className="explore-background" src={asset("FUNDO.png")} alt="" />
-        <img
-          className="explore-logo"
-          src={asset("LOGO IFA COLORIDA COMPLETA FUNDO ESCURO.png")}
-          alt="Instituto Futuro Atípico"
-        />
+        <DarkSectionBackground className="explore-dark-background" />
 
-        <div className="explore-heading">
+        <motion.div
+          className="explore-heading"
+          custom={{ delay: 0.1, reducedMotion, y: 18 } satisfies GuidedRevealCustom}
+          variants={guidedRevealVariants}
+          initial="hidden"
+          animate="visible"
+        >
           <p>EXPLORE O IFA</p>
           <h1>
             Continue sua jornada pelo <span>Instituto.</span>
           </h1>
           <p className="explore-copy">
             Encontre parceiros que caminham com o <strong>IFA</strong> ou acompanhe os próximos
-            <br />
             eventos, encontros e ações voltadas para famílias atípicas.
           </p>
-        </div>
+        </motion.div>
 
-        <div className="explore-card">
-          <article className="explore-option explore-option-events">
-            <div className="explore-option-title">
-              <CalendarDays />
-              <h2>Calendário de eventos</h2>
-            </div>
-            <p>
-              Acompanhe palestras, encontros e ações do
-              <br />
-              <strong>IFA.</strong> Um espaço para ficar por dentro dos
-              <br />
-              próximos eventos e oportunidades de conexão.
-            </p>
-            <button type="button">
-              Ver agenda
-              <ArrowRight />
-            </button>
-          </article>
+        <motion.div
+          className="explore-card"
+          custom={{ delay: 0.62, reducedMotion, y: 22 } satisfies GuidedRevealCustom}
+          variants={guidedRevealVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          {exploreDestinations.map((destination) => {
+            const Icon = destination.icon;
 
-          <article className="explore-option explore-option-network">
-            <div className="explore-option-title">
-              <Network />
-              <h2>Rede de parceiros</h2>
-            </div>
-            <p>
-              Encontre profissionais, clínicas e serviços parceiros
-              <br />
-              do <strong>IFA.</strong> Uma rede criada para ajudar famílias atípicas
-              <br />
-              com mais apoio, benefícios e segurança na escolha.
-            </p>
-            <button type="button">
-              Explorar rede
-              <ArrowRight />
-            </button>
-          </article>
-        </div>
+            return (
+              <article
+                className={`explore-option explore-option-${destination.id}`}
+                key={destination.id}
+              >
+                <div className="explore-option-title">
+                  <span className="explore-option-icon" aria-hidden="true">
+                    <Icon />
+                  </span>
+                  <h2>{destination.title}</h2>
+                </div>
+                <p className="explore-option-description">{destination.description}</p>
+                <ul className="explore-option-meta" aria-label={`Conteúdos de ${destination.title}`}>
+                  {destination.indicators.map((indicator) => (
+                    <li key={indicator}>{indicator}</li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  aria-label={destination.cta}
+                  onClick={() =>
+                    navigate(destination.id === "events" ? "/eventos" : "/parceiros")
+                  }
+                >
+                  <span>{destination.cta}</span>
+                  <ArrowRight />
+                </button>
+              </article>
+            );
+          })}
+        </motion.div>
 
-        <button className="explore-mouse" type="button" aria-label="Próxima seção" onClick={goToNext}>
-          <img src={asset("MOUSE.png")} alt="" />
-        </button>
+        <motion.button
+          className="explore-mouse"
+          type="button"
+          aria-label="Próxima seção"
+          onClick={goToNext}
+          custom={{ delay: 1.12, reducedMotion, y: 10 } satisfies GuidedRevealCustom}
+          variants={guidedRevealVariants}
+          initial="hidden"
+          animate="visible"
+        >
+          <ScrollIndicator tone="light" />
+        </motion.button>
       </div>
     </motion.section>
   );
@@ -1872,12 +2822,7 @@ function FAQSection() {
       transition={{ duration: 0.72, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="faq-stage" data-local-scroll>
-        <img className="faq-background" src={asset("FUNDO.png")} alt="" />
-        <img
-          className="faq-logo"
-          src={asset("LOGO IFA COLORIDA COMPLETA FUNDO ESCURO.png")}
-          alt="Instituto Futuro Atípico"
-        />
+        <DarkSectionBackground className="faq-dark-background" />
 
         <div className="faq-heading">
           <p>PERGUNTAS FREQUENTES</p>
@@ -1885,8 +2830,7 @@ function FAQSection() {
             Dúvidas comuns antes de <span>começar.</span>
           </h1>
           <p className="faq-copy">
-            Algumas respostas para ajudar sua família a entender melhor como o <strong>IFA</strong>
-            <br />
+            Algumas respostas para ajudar sua família a entender melhor como o <strong>IFA</strong>{" "}
             trabalha e por que essa conversa pode trazer mais clareza.
           </p>
         </div>
@@ -1933,7 +2877,7 @@ function FAQSection() {
         <footer className="site-footer">
           <div className="footer-content">
             <div className="footer-brand">
-              <img src={asset("LOGO IFA BRANCA.svg")} alt="Instituto Futuro Atípico" />
+              <img src={asset("logo rodape.png")} alt="Instituto Futuro Atípico" />
               <p>Proteção financeira, orientação e acolhimento para famílias atípicas.</p>
               <div className="footer-socials" aria-label="Canais sociais">
                 <button type="button" aria-label="Instagram">
