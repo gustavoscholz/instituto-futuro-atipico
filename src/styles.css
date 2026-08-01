@@ -6871,6 +6871,489 @@ button {
   }
 }
 
+/* Mobile free-scroll bands: one static decorative surface per color sequence. */
+@media (max-width: 760px) {
+  .mobile-continuous-flow {
+    min-height: 0;
+    overflow: clip;
+    background: transparent;
+  }
+
+  .mobile-theme-band {
+    --mobile-theme-transition-size: clamp(164px, 22svh, 196px);
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    isolation: isolate;
+    background-color: #ffffff;
+    background-repeat: repeat-y;
+    background-position: top center;
+    background-size: 100% 100svh;
+  }
+
+  .mobile-theme-band[data-mobile-theme="dark"] {
+    background-color: #042747;
+  }
+
+  .mobile-theme-band[data-mobile-transition-from] {
+    margin-top: calc(var(--mobile-theme-transition-size) * -1);
+    padding-top: var(--mobile-theme-transition-size);
+  }
+
+  .mobile-theme-band[data-mobile-transition-from]::before {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: var(--mobile-theme-transition-size);
+    content: "";
+    pointer-events: none;
+  }
+
+  .mobile-theme-band[data-mobile-transition-from="light"]::before {
+    background: linear-gradient(
+      to bottom,
+      #ffffff 0%,
+      rgba(255, 255, 255, 0.995) 12%,
+      rgba(255, 255, 255, 0.97) 25%,
+      rgba(255, 255, 255, 0.88) 39%,
+      rgba(255, 255, 255, 0.7) 54%,
+      rgba(255, 255, 255, 0.46) 69%,
+      rgba(255, 255, 255, 0.2) 84%,
+      rgba(255, 255, 255, 0.06) 94%,
+      transparent 100%
+    );
+  }
+
+  .mobile-theme-band[data-mobile-transition-from="dark"]::before {
+    background: linear-gradient(
+      to bottom,
+      #042747 0%,
+      rgba(4, 39, 71, 0.995) 12%,
+      rgba(4, 39, 71, 0.97) 25%,
+      rgba(4, 39, 71, 0.88) 39%,
+      rgba(4, 39, 71, 0.7) 54%,
+      rgba(4, 39, 71, 0.46) 69%,
+      rgba(4, 39, 71, 0.2) 84%,
+      rgba(4, 39, 71, 0.06) 94%,
+      transparent 100%
+    );
+  }
+
+  .mobile-theme-band-corners {
+    position: absolute;
+    z-index: 1;
+    right: 0;
+    left: 0;
+    height: clamp(150px, 24svh, 210px);
+    overflow: hidden;
+    pointer-events: none;
+    contain: layout paint;
+  }
+
+  .mobile-theme-band-corners-top {
+    top: 0;
+  }
+
+  .mobile-theme-band-corners-bottom {
+    bottom: 0;
+  }
+
+  .mobile-theme-band-corner {
+    position: absolute;
+    display: block;
+    width: clamp(132px, 42vw, 196px);
+    height: auto;
+    max-width: none;
+    object-fit: contain;
+    pointer-events: none;
+    transform: none;
+    transition: none;
+    animation: none;
+    will-change: auto;
+  }
+
+  .mobile-theme-band-corner-left {
+    left: -42px;
+  }
+
+  .mobile-theme-band-corner-right {
+    right: -42px;
+  }
+
+  .mobile-theme-band-corners-top .mobile-theme-band-corner {
+    top: -22px;
+  }
+
+  .mobile-theme-band-corners-bottom .mobile-theme-band-corner {
+    bottom: -30px;
+  }
+
+  .mobile-theme-band[data-mobile-theme="dark"] .mobile-theme-band-corner {
+    width: clamp(174px, 55vw, 250px);
+  }
+
+  .mobile-theme-band[data-mobile-theme="dark"] .mobile-theme-band-corner-left {
+    left: -52px;
+  }
+
+  .mobile-theme-band[data-mobile-theme="dark"] .mobile-theme-band-corner-right {
+    right: -52px;
+  }
+
+  .mobile-theme-band-content {
+    position: relative;
+    z-index: 3;
+  }
+
+  .mobile-flow-block {
+    position: relative;
+    width: 100%;
+    min-height: 0;
+    overflow: visible;
+    isolation: auto;
+    scroll-margin-top: 92px;
+  }
+
+  .mobile-flow-block + .mobile-flow-block {
+    margin-top: 0;
+  }
+
+  .mobile-flow-block > .second-section,
+  .mobile-flow-block > .third-section,
+  .mobile-flow-block > .fourth-section,
+  .mobile-flow-block > .stories-section,
+  .mobile-flow-block > .fifth-section,
+  .mobile-flow-block > .who-section,
+  .mobile-flow-block > .founders-section,
+  .mobile-flow-block > .partner-section,
+  .mobile-flow-block > .explore-section,
+  .mobile-flow-block > .faq-section {
+    position: relative;
+    inset: auto;
+    width: 100%;
+  }
+
+  .site-shell-mobile-flow .mobile-flow-block > section .light-section-background,
+  .site-shell-mobile-flow .mobile-flow-block > section .dark-section-background,
+  .site-shell-mobile-flow .mobile-flow-block .fifth-background,
+  .site-shell-mobile-flow .mobile-flow-block .fifth-corners {
+    display: none !important;
+  }
+
+  #mobile-proposito {
+    height: clamp(790px, 98svh, 860px);
+  }
+
+  #mobile-jornada {
+    height: clamp(900px, 116svh, 1010px);
+  }
+
+  #mobile-continuidade {
+    height: clamp(680px, 83svh, 750px);
+  }
+
+  #mobile-historias {
+    height: clamp(735px, 91svh, 820px);
+  }
+
+  #mobile-proposito .second-section,
+  #mobile-proposito .second-stage,
+  #mobile-jornada .third-section,
+  #mobile-jornada .third-stage,
+  #mobile-continuidade .fourth-section,
+  #mobile-continuidade .fourth-stage,
+  #mobile-historias .stories-section,
+  #mobile-historias .stories-stage,
+  #mobile-explore .explore-section,
+  #mobile-explore .explore-stage {
+    height: 100%;
+    min-height: 0;
+  }
+
+  #mobile-conversa-copy,
+  #mobile-conversa-card,
+  #mobile-quem-somos-overview,
+  #mobile-quem-somos-details,
+  #mobile-fundadores-photo,
+  #mobile-fundadores-cards,
+  #mobile-parceiro-intro,
+  #mobile-parceiro-cards {
+    height: auto;
+  }
+
+  #mobile-conversa-copy .fifth-section,
+  #mobile-conversa-card .fifth-section,
+  #mobile-quem-somos-overview .who-section,
+  #mobile-quem-somos-details .who-section,
+  #mobile-fundadores-photo .founders-section,
+  #mobile-fundadores-cards .founders-section,
+  #mobile-parceiro-intro .partner-section,
+  #mobile-parceiro-cards .partner-section,
+  #mobile-conversa-copy .fifth-stage,
+  #mobile-conversa-card .fifth-stage,
+  #mobile-quem-somos-overview .who-stage,
+  #mobile-quem-somos-details .who-stage,
+  #mobile-fundadores-photo .founders-stage,
+  #mobile-fundadores-cards .founders-stage,
+  #mobile-parceiro-intro .partner-stage,
+  #mobile-parceiro-cards .partner-stage {
+    position: relative;
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    touch-action: pan-y;
+  }
+
+  #mobile-conversa-copy .conversation-mobile-page,
+  #mobile-conversa-card .conversation-mobile-page,
+  #mobile-quem-somos-overview .who-mobile-page,
+  #mobile-quem-somos-details .who-mobile-page,
+  #mobile-fundadores-photo .founders-mobile-page,
+  #mobile-fundadores-cards .founders-mobile-page,
+  #mobile-parceiro-intro .partner-mobile-page,
+  #mobile-parceiro-cards .partner-mobile-page {
+    position: relative;
+    inset: auto;
+    min-height: 0;
+    justify-content: flex-start;
+    overflow: visible;
+  }
+
+  #mobile-conversa-copy .conversation-mobile-page,
+  #mobile-quem-somos-overview .who-mobile-page {
+    padding: clamp(112px, 16svh, 136px) 0 clamp(38px, 7vw, 54px);
+  }
+
+  #mobile-conversa-card .conversation-mobile-page,
+  #mobile-quem-somos-details .who-mobile-page,
+  #mobile-fundadores-photo .founders-mobile-page,
+  #mobile-fundadores-cards .founders-mobile-page,
+  #mobile-parceiro-intro .partner-mobile-page,
+  #mobile-parceiro-cards .partner-mobile-page {
+    padding: clamp(24px, 6vw, 42px) 0;
+  }
+
+  #mobile-explore {
+    height: clamp(760px, 94svh, 840px);
+  }
+
+  #mobile-faq {
+    min-height: 0;
+    overflow: visible;
+  }
+
+  #mobile-faq > .faq-section,
+  #mobile-faq .faq-stage {
+    min-height: 0;
+  }
+
+  .mobile-theme-band:last-child {
+    padding-bottom: 1px;
+  }
+}
+
+@media (max-width: 390px) {
+  #mobile-proposito {
+    height: 820px;
+  }
+
+  #mobile-jornada {
+    height: 1020px;
+  }
+
+  #mobile-continuidade {
+    height: 650px;
+  }
+
+  #mobile-historias {
+    height: 800px;
+  }
+
+  #mobile-explore {
+    height: 820px;
+  }
+}
+
+/* Mobile landing: after the opening transition, sections follow native document flow. */
+@media (max-width: 760px) {
+  html:has(body.mobile-free-scroll),
+  body.mobile-free-scroll {
+    min-height: 100%;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    scroll-behavior: smooth;
+  }
+
+  body.mobile-free-scroll {
+    touch-action: pan-y;
+    overscroll-behavior-y: auto;
+  }
+
+  body.mobile-free-scroll #root {
+    min-height: 100%;
+    overflow: visible;
+  }
+
+  .site-shell-mobile-flow {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
+    place-items: initial;
+  }
+
+  .mobile-continuous-flow {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-height: 100svh;
+    overflow: clip;
+    background: #ffffff;
+  }
+
+  .mobile-flow-block {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-height: 100svh;
+    overflow: hidden;
+    isolation: isolate;
+    scroll-margin-top: 0;
+  }
+
+  .mobile-flow-block[data-mobile-theme="light"] {
+    background: #ffffff;
+  }
+
+  .mobile-flow-block[data-mobile-theme="dark"] {
+    background: #042747;
+  }
+
+  .mobile-flow-block > .mobile-flow-static-background {
+    position: absolute !important;
+    inset: 0 !important;
+    z-index: 0;
+    overflow: hidden;
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+    will-change: auto !important;
+  }
+
+  .mobile-flow-block > .mobile-flow-static-background .light-section-background-base,
+  .mobile-flow-block > .mobile-flow-static-background .dark-section-background-base,
+  .mobile-flow-block > .mobile-flow-static-background .light-section-background-corners,
+  .mobile-flow-block > .mobile-flow-static-background .dark-section-background-corners,
+  .mobile-flow-block > .mobile-flow-static-background .light-section-corner,
+  .mobile-flow-block > .mobile-flow-static-background .dark-section-corner {
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+    will-change: auto !important;
+  }
+
+  .site-shell-mobile-flow .mobile-flow-block > section .light-section-background,
+  .site-shell-mobile-flow .mobile-flow-block > section .dark-section-background {
+    display: none !important;
+  }
+
+  .mobile-flow-block.mobile-flow-joins-previous {
+    margin-top: -1px;
+  }
+
+  .mobile-flow-block.mobile-flow-joins-previous .light-section-corner-red,
+  .mobile-flow-block.mobile-flow-joins-previous .light-section-corner-teal,
+  .mobile-flow-block.mobile-flow-joins-previous .dark-section-corner-red,
+  .mobile-flow-block.mobile-flow-joins-previous .dark-section-corner-teal {
+    display: none;
+  }
+
+  .mobile-flow-block.mobile-flow-joins-next .light-section-corner-blue,
+  .mobile-flow-block.mobile-flow-joins-next .light-section-corner-orange,
+  .mobile-flow-block.mobile-flow-joins-next .dark-section-corner-blue,
+  .mobile-flow-block.mobile-flow-joins-next .dark-section-corner-orange {
+    display: none;
+  }
+
+  .mobile-flow-block > .second-section,
+  .mobile-flow-block > .third-section,
+  .mobile-flow-block > .fourth-section,
+  .mobile-flow-block > .stories-section,
+  .mobile-flow-block > .fifth-section,
+  .mobile-flow-block > .who-section,
+  .mobile-flow-block > .founders-section,
+  .mobile-flow-block > .partner-section,
+  .mobile-flow-block > .explore-section,
+  .mobile-flow-block > .faq-section {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    width: 100%;
+    min-height: 100svh;
+  }
+
+  .mobile-continuous-flow .second-stage,
+  .mobile-continuous-flow .third-stage,
+  .mobile-continuous-flow .fourth-stage,
+  .mobile-continuous-flow .stories-stage,
+  .mobile-continuous-flow .fifth-stage,
+  .mobile-continuous-flow .who-stage,
+  .mobile-continuous-flow .founders-stage,
+  .mobile-continuous-flow .partner-stage,
+  .mobile-continuous-flow .explore-stage {
+    width: 100%;
+    height: 100svh;
+    min-height: 100svh;
+    touch-action: pan-y;
+  }
+
+  .mobile-continuous-flow button,
+  .mobile-continuous-flow a,
+  .mobile-continuous-flow [data-local-scroll] {
+    touch-action: manipulation;
+  }
+
+  #mobile-faq {
+    min-height: 100svh;
+    overflow: visible;
+  }
+
+  #mobile-faq > .faq-section {
+    position: relative;
+    inset: auto;
+    min-height: 100svh;
+    overflow: visible;
+  }
+
+  #mobile-faq .faq-stage {
+    width: 100%;
+    height: auto;
+    min-height: 100svh;
+    overflow: visible;
+    touch-action: pan-y;
+  }
+
+  #mobile-faq .site-footer {
+    position: relative;
+    top: auto;
+    margin-top: 0;
+  }
+
+  .site-shell-mobile-flow .section-nav {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  html:has(body.mobile-free-scroll),
+  body.mobile-free-scroll {
+    scroll-behavior: auto;
+  }
+}
+
 @media (min-width: 641px) and (max-width: 900px) and (max-height: 760px) {
   .second-main {
     top: 78px;
@@ -10847,5 +11330,203 @@ button {
   .mobile-menu-item::before,
   .mobile-menu-arrow {
     transition-duration: 0.01ms;
+  }
+}
+
+/* Mobile continuous flow: keep navigation isolated and soften theme boundaries. */
+@media (max-width: 760px) {
+  .site-shell-mobile-flow .site-header {
+    height: 112px;
+    z-index: 100;
+    isolation: isolate;
+  }
+
+  .site-shell-mobile-flow .site-header::before {
+    position: absolute;
+    z-index: 0;
+    inset: 0;
+    content: "";
+    pointer-events: none;
+    background: linear-gradient(
+      to bottom,
+      rgba(255, 255, 255, 0.94) 0%,
+      rgba(255, 255, 255, 0.82) 55%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    -webkit-backdrop-filter: blur(16px) saturate(120%);
+    backdrop-filter: blur(16px) saturate(120%);
+    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 64%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 0%, #000 64%, transparent 100%);
+  }
+
+  .site-shell-mobile-flow .site-header-logo,
+  .site-shell-mobile-flow .menu-button {
+    z-index: 2;
+  }
+
+  .site-shell-mobile-flow .site-header-logo {
+    transition: none;
+  }
+
+  .mobile-flow-block.mobile-flow-theme-transition-out .light-section-corner-blue,
+  .mobile-flow-block.mobile-flow-theme-transition-out .light-section-corner-orange,
+  .mobile-flow-block.mobile-flow-theme-transition-out .dark-section-corner-blue,
+  .mobile-flow-block.mobile-flow-theme-transition-out .dark-section-corner-orange,
+  .mobile-flow-block.mobile-flow-theme-transition-in .light-section-corner-red,
+  .mobile-flow-block.mobile-flow-theme-transition-in .light-section-corner-teal,
+  .mobile-flow-block.mobile-flow-theme-transition-in .dark-section-corner-red,
+  .mobile-flow-block.mobile-flow-theme-transition-in .dark-section-corner-teal {
+    display: none;
+  }
+
+  .mobile-flow-block.mobile-flow-theme-transition-in::before {
+    position: absolute;
+    right: 0;
+    left: 0;
+    z-index: 1;
+    height: clamp(108px, 15svh, 132px);
+    content: "";
+    pointer-events: none;
+  }
+
+  .mobile-flow-block.mobile-flow-theme-transition-out::after {
+    display: none;
+    content: none;
+  }
+
+  .mobile-flow-block.mobile-flow-theme-transition-in::before {
+    top: 0;
+  }
+
+  .mobile-flow-block[data-mobile-transition-from="light"]::before {
+    background: linear-gradient(
+      to bottom,
+      #ffffff 0%,
+      rgba(255, 255, 255, 0.98) 14%,
+      rgba(255, 255, 255, 0.82) 34%,
+      rgba(255, 255, 255, 0.56) 56%,
+      rgba(255, 255, 255, 0.28) 76%,
+      rgba(255, 255, 255, 0.08) 91%,
+      transparent 100%
+    );
+  }
+
+  .mobile-flow-block[data-mobile-transition-from="dark"]::before {
+    background: linear-gradient(
+      to bottom,
+      #042747 0%,
+      rgba(4, 39, 71, 0.98) 14%,
+      rgba(4, 39, 71, 0.82) 34%,
+      rgba(4, 39, 71, 0.56) 56%,
+      rgba(4, 39, 71, 0.28) 76%,
+      rgba(4, 39, 71, 0.08) 91%,
+      transparent 100%
+    );
+  }
+
+  .site-shell-mobile-flow .second-mouse,
+  .site-shell-mobile-flow .third-mouse,
+  .site-shell-mobile-flow .fourth-mouse,
+  .site-shell-mobile-flow .stories-mouse,
+  .site-shell-mobile-flow .fifth-mouse,
+  .site-shell-mobile-flow .who-mouse,
+  .site-shell-mobile-flow .founders-mouse,
+  .site-shell-mobile-flow .partner-mouse,
+  .site-shell-mobile-flow .explore-mouse,
+  .site-shell-mobile-flow .scroll-indicator {
+    display: none !important;
+  }
+}
+
+/* Final mobile-flow sizing overrides. Keep these after legacy full-screen rules. */
+@media (max-width: 760px) {
+  .mobile-flow-block {
+    min-height: 0;
+    overflow: visible;
+    isolation: auto;
+  }
+
+  .mobile-flow-block + .mobile-flow-block {
+    margin-top: 0;
+  }
+
+  .mobile-flow-block > .second-section,
+  .mobile-flow-block > .third-section,
+  .mobile-flow-block > .fourth-section,
+  .mobile-flow-block > .stories-section,
+  .mobile-flow-block > .fifth-section,
+  .mobile-flow-block > .who-section,
+  .mobile-flow-block > .founders-section,
+  .mobile-flow-block > .partner-section,
+  .mobile-flow-block > .explore-section,
+  .mobile-flow-block > .faq-section {
+    position: relative;
+    inset: auto;
+    min-height: 0;
+  }
+
+  #mobile-proposito,
+  #mobile-jornada,
+  #mobile-continuidade,
+  #mobile-historias,
+  #mobile-explore {
+    min-height: 0;
+  }
+
+  #mobile-proposito .second-stage,
+  #mobile-jornada .third-stage,
+  #mobile-continuidade .fourth-stage,
+  #mobile-historias .stories-stage,
+  #mobile-explore .explore-stage {
+    min-height: 0;
+  }
+
+  #mobile-conversa-copy .fifth-stage,
+  #mobile-conversa-card .fifth-stage,
+  #mobile-quem-somos-overview .who-stage,
+  #mobile-quem-somos-details .who-stage,
+  #mobile-fundadores-photo .founders-stage,
+  #mobile-fundadores-cards .founders-stage,
+  #mobile-parceiro-intro .partner-stage,
+  #mobile-parceiro-cards .partner-stage {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    touch-action: pan-y;
+  }
+
+  #mobile-conversa-copy .conversation-mobile-page,
+  #mobile-conversa-card .conversation-mobile-page,
+  #mobile-quem-somos-overview .who-mobile-page,
+  #mobile-quem-somos-details .who-mobile-page,
+  #mobile-fundadores-photo .founders-mobile-page,
+  #mobile-fundadores-cards .founders-mobile-page,
+  #mobile-parceiro-intro .partner-mobile-page,
+  #mobile-parceiro-cards .partner-mobile-page {
+    position: relative;
+    inset: auto;
+    min-height: 0;
+    justify-content: flex-start;
+    overflow: visible;
+  }
+
+  #mobile-conversa-copy .conversation-mobile-page,
+  #mobile-quem-somos-overview .who-mobile-page {
+    padding: clamp(112px, 16svh, 136px) 0 clamp(38px, 7vw, 54px);
+  }
+
+  #mobile-conversa-card .conversation-mobile-page,
+  #mobile-quem-somos-details .who-mobile-page,
+  #mobile-fundadores-photo .founders-mobile-page,
+  #mobile-fundadores-cards .founders-mobile-page,
+  #mobile-parceiro-intro .partner-mobile-page,
+  #mobile-parceiro-cards .partner-mobile-page {
+    padding: clamp(24px, 6vw, 42px) 0;
+  }
+
+  #mobile-faq,
+  #mobile-faq > .faq-section,
+  #mobile-faq .faq-stage {
+    min-height: 0;
   }
 }

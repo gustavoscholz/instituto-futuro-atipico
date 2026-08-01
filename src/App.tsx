@@ -123,6 +123,20 @@ const sections: Section[] = [
   },
 ];
 
+const mobileSectionTargets: Record<number, string> = {
+  0: "mobile-proposito",
+  1: "mobile-proposito",
+  2: "mobile-jornada",
+  3: "mobile-continuidade",
+  4: "mobile-historias",
+  5: "mobile-conversa-copy",
+  6: "mobile-quem-somos-overview",
+  7: "mobile-fundadores-photo",
+  8: "mobile-parceiro-intro",
+  9: "mobile-explore",
+  10: "mobile-faq",
+};
+
 const asset = (name: string) => `/assets/${name}`;
 
 const instagramUrl = "https://www.instagram.com/institutofuturoatipico/?hl=pt-br";
@@ -156,6 +170,7 @@ function App() {
   const [whoMobilePage, setWhoMobilePage] = useState<0 | 1>(0);
   const [foundersMobilePage, setFoundersMobilePage] = useState<0 | 1>(0);
   const [partnerMobilePage, setPartnerMobilePage] = useState<0 | 1>(0);
+  const [mobileIntroComplete, setMobileIntroComplete] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(
     () => window.matchMedia("(max-width: 760px)").matches,
   );
@@ -165,6 +180,15 @@ function App() {
 
   const activeSection = sections[activeIndex];
   const isHeroTransitioning = heroTransitionDirection !== null;
+  const isMobileFreeFlow =
+    isMobileViewport && mobileIntroComplete && activeIndex > 0 && !isHeroTransitioning;
+
+  const scrollToMobileSection = (index: number, behavior: "auto" | "smooth" = "smooth") => {
+    const targetId = mobileSectionTargets[Math.max(index, 1)];
+    const target = targetId ? document.getElementById(targetId) : null;
+
+    target?.scrollIntoView({ behavior, block: "start" });
+  };
 
   useEffect(() => {
     if (!menuOpen) {
@@ -182,7 +206,17 @@ function App() {
   }, [menuOpen]);
 
   const goToSection = (index: number) => {
-    const nextIndex = Math.min(Math.max(index, 0), sections.length - 1);
+    const requestedIndex = Math.min(Math.max(index, 0), sections.length - 1);
+    const nextIndex =
+      isMobileViewport && !mobileIntroComplete && activeIndex === 0 && requestedIndex > 0
+        ? 1
+        : requestedIndex;
+
+    if (isMobileFreeFlow) {
+      setMenuOpen(false);
+      scrollToMobileSection(nextIndex);
+      return;
+    }
 
     if (nextIndex === activeIndex || isAnimating.current || isHeroTransitioning) {
       return;
@@ -267,6 +301,10 @@ function App() {
   };
 
   const navigateByDirection = (direction: -1 | 1) => {
+    if (isMobileFreeFlow) {
+      return;
+    }
+
     if (isMobileViewport) {
       if (activeIndex === 5 && direction === 1 && conversationMobilePage === 0) {
         showConversationMobilePage(1);
@@ -371,7 +409,43 @@ function App() {
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  useLayoutEffect(() => {
+    const allowNativeScroll = isMobileFreeFlow && !menuOpen;
+    const overflow = allowNativeScroll ? "auto" : "hidden";
+
+    document.documentElement.style.overflowX = "hidden";
+    document.documentElement.style.overflowY = overflow;
+    document.body.style.overflowX = "hidden";
+    document.body.style.overflowY = overflow;
+    document.body.style.touchAction = allowNativeScroll ? "pan-y" : "none";
+
+    if (isMobileFreeFlow) {
+      document.body.classList.add("mobile-free-scroll");
+    } else {
+      document.body.classList.remove("mobile-free-scroll");
+    }
+
+    return () => {
+      document.documentElement.style.overflowX = "";
+      document.documentElement.style.overflowY = "";
+      document.body.style.overflowX = "";
+      document.body.style.overflowY = "";
+      document.body.style.touchAction = "";
+      document.body.classList.remove("mobile-free-scroll");
+    };
+  }, [isMobileFreeFlow, menuOpen]);
+
   useEffect(() => {
+    if (isMobileViewport && activeIndex > 0 && !isHeroTransitioning) {
+      setMobileIntroComplete(true);
+    }
+  }, [activeIndex, isHeroTransitioning, isMobileViewport]);
+
+  useEffect(() => {
+    if (isMobileFreeFlow) {
+      return;
+    }
+
     const handleWheel = (event: WheelEvent) => {
       const localScroll = event.target instanceof Element
         ? (event.target.closest("[data-local-scroll]") as HTMLElement | null)
@@ -466,6 +540,7 @@ function App() {
     conversationMobilePage,
     foundersMobilePage,
     heroTransitionDirection,
+    isMobileFreeFlow,
     isMobileViewport,
     menuOpen,
     partnerMobilePage,
@@ -500,6 +575,12 @@ function App() {
     }
 
     setHeroTransitionDirection(null);
+
+    if (direction === "forward" && isMobileViewport) {
+      setMobileIntroComplete(true);
+      window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "auto" }));
+    }
+
     window.setTimeout(() => {
       isAnimating.current = false;
     }, 280);
@@ -508,7 +589,9 @@ function App() {
   const isDarkInternalSection = activeIndex === 5 || activeIndex === 9 || activeIndex === 10;
   const showPersistentLogo = activeIndex > 0 && heroTransitionDirection === null;
   const persistentLogoSrc = asset(
-    isDarkInternalSection
+    isMobileViewport
+      ? "LOGO IFA COLORIDA COMPLETA.png"
+      : isDarkInternalSection
       ? "LOGO IFA COLORIDA COMPLETA FUNDO ESCURO.png"
       : "LOGO IFA COLORIDA COMPLETA.png",
   );
@@ -539,11 +622,15 @@ function App() {
           }}
         />
       )),
-    [activeIndex, heroTransitionDirection],
+    [activeIndex, heroTransitionDirection, isMobileFreeFlow, isMobileViewport],
   );
 
   return (
-    <main className={`site-shell ${activeSection.tone === "dark" ? "is-dark" : "is-light"}`}>
+    <main
+      className={`site-shell ${activeSection.tone === "dark" ? "is-dark" : "is-light"} ${
+        isMobileFreeFlow ? "site-shell-mobile-flow" : ""
+      }`}
+    >
       <header className="site-header" aria-label="Menu principal">
         <img
           className={`site-header-logo ${showPersistentLogo ? "site-header-logo-visible" : ""}`}
@@ -568,7 +655,14 @@ function App() {
       </header>
 
       <AnimatePresence mode="wait">
-        {activeIndex === 0 ? (
+        {isMobileFreeFlow ? (
+          <MobileContinuousFlow
+            key="mobile-continuous-flow"
+            activeIndex={activeIndex}
+            onActiveIndexChange={setActiveIndex}
+            onGoToSection={goToSection}
+          />
+        ) : activeIndex === 0 ? (
           <div className="hero-flow" key="inicio-flow">
             <FirstSection
               areCtasVisible={isHeroCtaVisible}
@@ -753,6 +847,271 @@ function App() {
       </AnimatePresence>
 
     </main>
+  );
+}
+
+function MobileFlowBlock({
+  children,
+  id,
+  sectionIndex,
+}: {
+  children: React.ReactNode;
+  id: string;
+  sectionIndex: number;
+}) {
+  return (
+    <div
+      id={id}
+      className="mobile-flow-block"
+      data-mobile-section-index={sectionIndex}
+    >
+      {children}
+    </div>
+  );
+}
+
+function MobileThemeBand({
+  children,
+  theme,
+  transitionsFrom,
+}: {
+  children: React.ReactNode;
+  theme: "light" | "dark";
+  transitionsFrom?: "light" | "dark";
+}) {
+  const backgroundFile = theme === "light" ? "fundo pc.jpg.jpeg" : "fundo escuro.png";
+  const corners = theme === "light"
+    ? {
+        topLeft: "vermelho.svg",
+        topRight: "azul claro.svg",
+        bottomLeft: "azul escuro.svg",
+        bottomRight: "laranja.svg",
+      }
+    : {
+        topLeft: "vermelho2.svg",
+        topRight: "azul claro2.svg",
+        bottomLeft: "azul escuro2.svg",
+        bottomRight: "laranja2.svg",
+      };
+
+  return (
+    <div
+      className="mobile-theme-band"
+      data-mobile-theme={theme}
+      data-mobile-transition-from={transitionsFrom}
+      style={{ backgroundImage: `url("${asset(backgroundFile)}")` }}
+    >
+      <div className="mobile-theme-band-corners mobile-theme-band-corners-top" aria-hidden="true">
+        <img
+          className="mobile-theme-band-corner mobile-theme-band-corner-left"
+          src={asset(corners.topLeft)}
+          alt=""
+        />
+        <img
+          className="mobile-theme-band-corner mobile-theme-band-corner-right"
+          src={asset(corners.topRight)}
+          alt=""
+        />
+      </div>
+      <div className="mobile-theme-band-corners mobile-theme-band-corners-bottom" aria-hidden="true">
+        <img
+          className="mobile-theme-band-corner mobile-theme-band-corner-left"
+          src={asset(corners.bottomLeft)}
+          alt=""
+        />
+        <img
+          className="mobile-theme-band-corner mobile-theme-band-corner-right"
+          src={asset(corners.bottomRight)}
+          alt=""
+        />
+      </div>
+      <div className="mobile-theme-band-content">{children}</div>
+    </div>
+  );
+}
+
+function MobileContinuousFlow({
+  activeIndex,
+  onActiveIndexChange,
+  onGoToSection,
+}: {
+  activeIndex: number;
+  onActiveIndexChange: (index: number) => void;
+  onGoToSection: (index: number) => void;
+}) {
+  const flowRef = useRef<HTMLDivElement>(null);
+  const reducedMotion = Boolean(useReducedMotion());
+  const scrollToBlock = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({
+      behavior: reducedMotion ? "auto" : "smooth",
+      block: "start",
+    });
+  };
+
+  useEffect(() => {
+    const flow = flowRef.current;
+
+    if (!flow) {
+      return;
+    }
+
+    const blocks = Array.from(
+      flow.querySelectorAll<HTMLElement>("[data-mobile-section-index]"),
+    );
+    const visibleBlocks = new Map<Element, number>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            visibleBlocks.set(entry.target, entry.intersectionRatio);
+          } else {
+            visibleBlocks.delete(entry.target);
+          }
+        });
+
+        const current = [...visibleBlocks.entries()].sort((left, right) => {
+          if (right[1] !== left[1]) {
+            return right[1] - left[1];
+          }
+
+          const leftTop = (left[0] as HTMLElement).getBoundingClientRect().top;
+          const rightTop = (right[0] as HTMLElement).getBoundingClientRect().top;
+          return Math.abs(leftTop) - Math.abs(rightTop);
+        })[0]?.[0] as HTMLElement | undefined;
+
+        if (!current) {
+          return;
+        }
+
+        const nextIndex = Number(current.dataset.mobileSectionIndex);
+        if (Number.isFinite(nextIndex) && nextIndex !== activeIndex) {
+          onActiveIndexChange(nextIndex);
+        }
+      },
+      {
+        rootMargin: "-24% 0px -58% 0px",
+        threshold: [0, 0.25, 0.5, 0.75],
+      },
+    );
+
+    blocks.forEach((block) => observer.observe(block));
+    return () => observer.disconnect();
+  }, [activeIndex, onActiveIndexChange]);
+
+  return (
+    <motion.div
+      ref={flowRef}
+      className="mobile-continuous-flow"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: reducedMotion ? 0.12 : 0.42, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <MobileThemeBand theme="light">
+        <MobileFlowBlock id="mobile-proposito" sectionIndex={1}>
+          <SecondSection
+            enterImmediately={false}
+            exitImmediately={false}
+            goToPlanning={() => scrollToBlock("mobile-continuidade")}
+            goToNext={() => scrollToBlock("mobile-jornada")}
+          />
+        </MobileFlowBlock>
+
+        <MobileFlowBlock id="mobile-jornada" sectionIndex={2}>
+          <ThirdSection goToNext={() => scrollToBlock("mobile-continuidade")} />
+        </MobileFlowBlock>
+
+        <MobileFlowBlock id="mobile-continuidade" sectionIndex={3}>
+          <FourthSection goToNext={() => scrollToBlock("mobile-historias")} />
+        </MobileFlowBlock>
+
+        <MobileFlowBlock id="mobile-historias" sectionIndex={4}>
+          <StoriesSection
+            isSectionActive={activeIndex === 4}
+            goToNext={() => scrollToBlock("mobile-conversa-copy")}
+          />
+        </MobileFlowBlock>
+      </MobileThemeBand>
+
+      <MobileThemeBand theme="dark" transitionsFrom="light">
+        <MobileFlowBlock id="mobile-conversa-copy" sectionIndex={5}>
+          <FifthSection
+            isMobileViewport
+            mobilePage={0}
+            goToPlanning={() => scrollToBlock("mobile-continuidade")}
+            goToNext={() => scrollToBlock("mobile-conversa-card")}
+          />
+        </MobileFlowBlock>
+
+        <MobileFlowBlock id="mobile-conversa-card" sectionIndex={5}>
+          <FifthSection
+            isMobileViewport
+            mobilePage={1}
+            goToPlanning={() => scrollToBlock("mobile-continuidade")}
+            goToNext={() => scrollToBlock("mobile-quem-somos-overview")}
+          />
+        </MobileFlowBlock>
+      </MobileThemeBand>
+
+      <MobileThemeBand theme="light" transitionsFrom="dark">
+        <MobileFlowBlock id="mobile-quem-somos-overview" sectionIndex={6}>
+          <WhoWeAreSection
+            isMobileViewport
+            mobilePage={0}
+            goToNext={() => scrollToBlock("mobile-quem-somos-details")}
+          />
+        </MobileFlowBlock>
+
+        <MobileFlowBlock id="mobile-quem-somos-details" sectionIndex={6}>
+          <WhoWeAreSection
+            isMobileViewport
+            mobilePage={1}
+            goToNext={() => scrollToBlock("mobile-fundadores-photo")}
+          />
+        </MobileFlowBlock>
+
+        <MobileFlowBlock id="mobile-fundadores-photo" sectionIndex={7}>
+          <FoundersSection
+            isMobileViewport
+            mobilePage={0}
+            goToNext={() => scrollToBlock("mobile-fundadores-cards")}
+          />
+        </MobileFlowBlock>
+
+        <MobileFlowBlock id="mobile-fundadores-cards" sectionIndex={7}>
+          <FoundersSection
+            isMobileViewport
+            mobilePage={1}
+            goToNext={() => scrollToBlock("mobile-parceiro-intro")}
+          />
+        </MobileFlowBlock>
+
+        <MobileFlowBlock id="mobile-parceiro-intro" sectionIndex={8}>
+          <PartnerSection
+            isMobileViewport
+            mobilePage={0}
+            goToNext={() => scrollToBlock("mobile-parceiro-cards")}
+          />
+        </MobileFlowBlock>
+
+        <MobileFlowBlock id="mobile-parceiro-cards" sectionIndex={8}>
+          <PartnerSection
+            isMobileViewport
+            mobilePage={1}
+            goToNext={() => scrollToBlock("mobile-explore")}
+          />
+        </MobileFlowBlock>
+      </MobileThemeBand>
+
+      <MobileThemeBand theme="dark" transitionsFrom="light">
+        <MobileFlowBlock id="mobile-explore" sectionIndex={9}>
+          <ExploreSection goToNext={() => scrollToBlock("mobile-faq")} />
+        </MobileFlowBlock>
+
+        <MobileFlowBlock id="mobile-faq" sectionIndex={10}>
+          <FAQSection goToSection={onGoToSection} />
+        </MobileFlowBlock>
+      </MobileThemeBand>
+    </motion.div>
   );
 }
 
@@ -1572,7 +1931,13 @@ const feedbacks: Feedback[] = [
   },
 ];
 
-function StoriesSection({ goToNext }: { goToNext: () => void }) {
+function StoriesSection({
+  goToNext,
+  isSectionActive = true,
+}: {
+  goToNext: () => void;
+  isSectionActive?: boolean;
+}) {
   const [activeFeedback, setActiveFeedback] = useState(0);
   const [isCarouselPaused, setIsCarouselPaused] = useState(false);
   const reducedMotion = Boolean(useReducedMotion());
@@ -1583,7 +1948,11 @@ function StoriesSection({ goToNext }: { goToNext: () => void }) {
   };
 
   useEffect(() => {
-    if (isCarouselPaused || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (
+      !isSectionActive ||
+      isCarouselPaused ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
       return;
     }
 
@@ -1592,7 +1961,7 @@ function StoriesSection({ goToNext }: { goToNext: () => void }) {
     }, 4000);
 
     return () => window.clearTimeout(timeout);
-  }, [activeFeedback, isCarouselPaused]);
+  }, [activeFeedback, isCarouselPaused, isSectionActive]);
 
   return (
     <motion.section

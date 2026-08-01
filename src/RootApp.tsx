@@ -11,7 +11,11 @@ function RouteEnvironment() {
   const location = useLocation();
 
   useEffect(() => {
-    document.body.style.overflow = location.pathname === "/" ? "hidden" : "auto";
+    // The landing page owns its responsive overflow behavior. Content and
+    // administration routes always use regular document scrolling.
+    if (location.pathname !== "/") {
+      document.body.style.overflow = "auto";
+    }
   }, [location.pathname]);
 
   return null;
@@ -19,7 +23,16 @@ function RouteEnvironment() {
 
 function RouteFallback() {
   return (
-    <div style={{ minHeight: "100svh", display: "grid", placeItems: "center", background: "#052f4a", color: "white", fontFamily: "system-ui, sans-serif" }}>
+    <div
+      style={{
+        minHeight: "100svh",
+        display: "grid",
+        placeItems: "center",
+        background: "#052f4a",
+        color: "white",
+        fontFamily: "system-ui, sans-serif",
+      }}
+    >
       <p>Carregando...</p>
     </div>
   );
