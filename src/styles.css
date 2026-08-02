@@ -6880,7 +6880,6 @@ button {
   }
 
   .mobile-theme-band {
-    --mobile-theme-transition-size: clamp(164px, 22svh, 196px);
     position: relative;
     width: 100%;
     overflow: hidden;
@@ -6895,50 +6894,47 @@ button {
     background-color: #042747;
   }
 
-  .mobile-theme-band[data-mobile-transition-from] {
-    margin-top: calc(var(--mobile-theme-transition-size) * -1);
-    padding-top: var(--mobile-theme-transition-size);
-  }
-
-  .mobile-theme-band[data-mobile-transition-from]::before {
-    position: absolute;
-    z-index: 2;
-    top: 0;
-    right: 0;
-    left: 0;
-    height: var(--mobile-theme-transition-size);
-    content: "";
+  .mobile-theme-transition {
+    position: relative;
+    z-index: 0;
+    width: 100%;
+    height: clamp(108px, 13svh, 132px);
+    flex: 0 0 auto;
     pointer-events: none;
   }
 
-  .mobile-theme-band[data-mobile-transition-from="light"]::before {
+  .mobile-theme-transition[data-mobile-theme-from="light"][data-mobile-theme-to="dark"] {
     background: linear-gradient(
       to bottom,
       #ffffff 0%,
-      rgba(255, 255, 255, 0.995) 12%,
-      rgba(255, 255, 255, 0.97) 25%,
-      rgba(255, 255, 255, 0.88) 39%,
-      rgba(255, 255, 255, 0.7) 54%,
-      rgba(255, 255, 255, 0.46) 69%,
-      rgba(255, 255, 255, 0.2) 84%,
-      rgba(255, 255, 255, 0.06) 94%,
-      transparent 100%
+      #f9fbfc 10%,
+      #edf2f6 22%,
+      #d5e0e9 36%,
+      #afc2d0 50%,
+      #7e9baf 64%,
+      #4f728c 77%,
+      #294f6d 88%,
+      #123b58 95%,
+      #042747 100%
     );
+    background: linear-gradient(to bottom in oklab, #ffffff 0%, #042747 100%);
   }
 
-  .mobile-theme-band[data-mobile-transition-from="dark"]::before {
+  .mobile-theme-transition[data-mobile-theme-from="dark"][data-mobile-theme-to="light"] {
     background: linear-gradient(
       to bottom,
       #042747 0%,
-      rgba(4, 39, 71, 0.995) 12%,
-      rgba(4, 39, 71, 0.97) 25%,
-      rgba(4, 39, 71, 0.88) 39%,
-      rgba(4, 39, 71, 0.7) 54%,
-      rgba(4, 39, 71, 0.46) 69%,
-      rgba(4, 39, 71, 0.2) 84%,
-      rgba(4, 39, 71, 0.06) 94%,
-      transparent 100%
+      #123b58 5%,
+      #294f6d 12%,
+      #4f728c 23%,
+      #7e9baf 36%,
+      #afc2d0 50%,
+      #d5e0e9 64%,
+      #edf2f6 78%,
+      #f9fbfc 90%,
+      #ffffff 100%
     );
+    background: linear-gradient(to bottom in oklab, #042747 0%, #ffffff 100%);
   }
 
   .mobile-theme-band-corners {
@@ -11366,62 +11362,6 @@ button {
 
   .site-shell-mobile-flow .site-header-logo {
     transition: none;
-  }
-
-  .mobile-flow-block.mobile-flow-theme-transition-out .light-section-corner-blue,
-  .mobile-flow-block.mobile-flow-theme-transition-out .light-section-corner-orange,
-  .mobile-flow-block.mobile-flow-theme-transition-out .dark-section-corner-blue,
-  .mobile-flow-block.mobile-flow-theme-transition-out .dark-section-corner-orange,
-  .mobile-flow-block.mobile-flow-theme-transition-in .light-section-corner-red,
-  .mobile-flow-block.mobile-flow-theme-transition-in .light-section-corner-teal,
-  .mobile-flow-block.mobile-flow-theme-transition-in .dark-section-corner-red,
-  .mobile-flow-block.mobile-flow-theme-transition-in .dark-section-corner-teal {
-    display: none;
-  }
-
-  .mobile-flow-block.mobile-flow-theme-transition-in::before {
-    position: absolute;
-    right: 0;
-    left: 0;
-    z-index: 1;
-    height: clamp(108px, 15svh, 132px);
-    content: "";
-    pointer-events: none;
-  }
-
-  .mobile-flow-block.mobile-flow-theme-transition-out::after {
-    display: none;
-    content: none;
-  }
-
-  .mobile-flow-block.mobile-flow-theme-transition-in::before {
-    top: 0;
-  }
-
-  .mobile-flow-block[data-mobile-transition-from="light"]::before {
-    background: linear-gradient(
-      to bottom,
-      #ffffff 0%,
-      rgba(255, 255, 255, 0.98) 14%,
-      rgba(255, 255, 255, 0.82) 34%,
-      rgba(255, 255, 255, 0.56) 56%,
-      rgba(255, 255, 255, 0.28) 76%,
-      rgba(255, 255, 255, 0.08) 91%,
-      transparent 100%
-    );
-  }
-
-  .mobile-flow-block[data-mobile-transition-from="dark"]::before {
-    background: linear-gradient(
-      to bottom,
-      #042747 0%,
-      rgba(4, 39, 71, 0.98) 14%,
-      rgba(4, 39, 71, 0.82) 34%,
-      rgba(4, 39, 71, 0.56) 56%,
-      rgba(4, 39, 71, 0.28) 76%,
-      rgba(4, 39, 71, 0.08) 91%,
-      transparent 100%
-    );
   }
 
   .site-shell-mobile-flow .second-mouse,

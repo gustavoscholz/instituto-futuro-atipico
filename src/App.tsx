@@ -873,11 +873,9 @@ function MobileFlowBlock({
 function MobileThemeBand({
   children,
   theme,
-  transitionsFrom,
 }: {
   children: React.ReactNode;
   theme: "light" | "dark";
-  transitionsFrom?: "light" | "dark";
 }) {
   const backgroundFile = theme === "light" ? "fundo pc.jpg.jpeg" : "fundo escuro.png";
   const corners = theme === "light"
@@ -898,7 +896,6 @@ function MobileThemeBand({
     <div
       className="mobile-theme-band"
       data-mobile-theme={theme}
-      data-mobile-transition-from={transitionsFrom}
       style={{ backgroundImage: `url("${asset(backgroundFile)}")` }}
     >
       <div className="mobile-theme-band-corners mobile-theme-band-corners-top" aria-hidden="true">
@@ -927,6 +924,23 @@ function MobileThemeBand({
       </div>
       <div className="mobile-theme-band-content">{children}</div>
     </div>
+  );
+}
+
+function MobileThemeTransition({
+  from,
+  to,
+}: {
+  from: "light" | "dark";
+  to: "light" | "dark";
+}) {
+  return (
+    <div
+      className="mobile-theme-transition"
+      data-mobile-theme-from={from}
+      data-mobile-theme-to={to}
+      aria-hidden="true"
+    />
   );
 }
 
@@ -1032,7 +1046,9 @@ function MobileContinuousFlow({
         </MobileFlowBlock>
       </MobileThemeBand>
 
-      <MobileThemeBand theme="dark" transitionsFrom="light">
+      <MobileThemeTransition from="light" to="dark" />
+
+      <MobileThemeBand theme="dark">
         <MobileFlowBlock id="mobile-conversa-copy" sectionIndex={5}>
           <FifthSection
             isMobileViewport
@@ -1052,7 +1068,9 @@ function MobileContinuousFlow({
         </MobileFlowBlock>
       </MobileThemeBand>
 
-      <MobileThemeBand theme="light" transitionsFrom="dark">
+      <MobileThemeTransition from="dark" to="light" />
+
+      <MobileThemeBand theme="light">
         <MobileFlowBlock id="mobile-quem-somos-overview" sectionIndex={6}>
           <WhoWeAreSection
             isMobileViewport
@@ -1102,7 +1120,9 @@ function MobileContinuousFlow({
         </MobileFlowBlock>
       </MobileThemeBand>
 
-      <MobileThemeBand theme="dark" transitionsFrom="light">
+      <MobileThemeTransition from="light" to="dark" />
+
+      <MobileThemeBand theme="dark">
         <MobileFlowBlock id="mobile-explore" sectionIndex={9}>
           <ExploreSection goToNext={() => scrollToBlock("mobile-faq")} />
         </MobileFlowBlock>
